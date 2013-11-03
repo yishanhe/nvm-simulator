@@ -57,17 +57,19 @@ int main(int argc, const char *argv[])
     }
 
     // change the working directory
-    if ((chdir("/scratch/syi.scratcha/GitRepo/nvm-simulator/nvm.daemon/"))<0) {
+    if ((chdir("/scratch/syi.scratch/GitRepo/nvm-simulator/nvm.daemon/"))<0) {
         exit(1);
     }
 
     // close the standard file descriptors
     close(STDIN_FILENO);
-    close(STDOUT_FILENO);
+    //close(STDOUT_FILENO);
     close(STDERR_FILENO);
 
+    // open log file
     fp = fopen("Log.txt","w+");
 
+    fprintf(fp, "Log Info: ...\n");
     // the big loop
     while (1) {
         printf("I am running\n");
