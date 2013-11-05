@@ -18,11 +18,29 @@
 #include <stdlib.h>
 #include "nv_api.h"
 
-NVRDescr * NVOpenRegion(char * name, void * startingAddr, int size) {
+
+
+/*-----------------------------------------------------------------------------
+ *
+ *  this is reasonable since if we are using a share memory as nvregion,
+ *  we can return this address and actually we will put the NVRDescr structure
+ *  at this position.  the offset + base address if we put all nvregion in a big
+ *  chunk of shared memory. So let's do  nvregion=shm first.
+ *-----------------------------------------------------------------------------*/
+
+/*
+ * ===  FUNCTION  ======================================================================
+ *         Name:  NVOpenRegion
+ *  Description:
+ * =====================================================================================
+ */
+NVRDescr * NVOpenRegion(char * name,            /* region name */
+                        void * startingAddr,    /* starting addr */
+                        int size)               /* region sizze */
+{
 
 }
 
-NVRDescr * NVCreateNewRegion(char * name, void * startingAddr, int size) {
 
 }
 

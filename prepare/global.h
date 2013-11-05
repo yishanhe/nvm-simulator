@@ -25,11 +25,6 @@
 #define MAXREGION 32  //define the maximum number of regions
 #define DEBUG
 
-#define NV_MAXPATH  128// maximum file name length
-#define NVROOT_MAXPATH  128// maximum file name length
-#define offset2addr(base,off) ((void *)((base)+(off)))
-#define addr2offset(base,addr) ((void *)((addr)-(base)))
-
 
 #ifdef  DEBUG
     #define DEBUG_OUTPUT(string) (printf("[DEBUG] %s\n",string))
@@ -39,24 +34,19 @@
 
 typedef long NVKey_t;
 
-typedef struct NVRDescr_s{ //rearrange the seq for avoiding padding
+typedef struct {
     long size; // the size of NVRegion
-    NVKey_t RefKey;
-    long rootMapOffset; //  rootmap
     int shareFlag;
+    NVKey_t RefKey;
     int processCnt;
     int NVRootCnt;
+    long rootMapOffset;
+    void * rootMap;
     int ID;
     int nameLen;
-    char name[NV_MAXPATH];
+    char* name;
     // extra meta data for implementation
     //
-} NVRDescr,NVRDescr_t;
-
-typedef struct NVRootmapItem_s {
-    long location; //offset
-    char type;
-    char name[NVROOT_MAXPATH];
-}NVRootmapItem_t;
+} NVRDescr;
 
 #endif
