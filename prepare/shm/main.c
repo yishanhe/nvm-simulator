@@ -24,6 +24,7 @@
 #include <semaphore.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include "global.h"
 #define BUFF_SIZE 1024
 
 
