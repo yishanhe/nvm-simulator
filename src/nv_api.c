@@ -44,13 +44,13 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
                         int size)               /* region size. The real size is rounded up */
 {
  /* :TODO:11/05/2013 10:48:43 AM:: implement hash(name)->key, not rely on the file index any more */
+ /* :WARNING:11/05/2013 03:36:26 PM:: the size maybe different  */
+    int nameLen;
     // check name lenght
-    if (strlen(name)>NV_MAXPATH){
+    if ((nameLen=strlen(name))>NV_MAXPATH){
         printf("NVOpenRegion name length is longer than NV_MAXPATH\n");
         exit(1);
     }
-
- /* :WARNING:11/05/2013 03:36:26 PM:: the size maybe different  */
 
     key_t keyNVRegion;
     int shmId;
@@ -87,7 +87,7 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
 
     nvrAddr = (NVRDescr *)shmPtr;
 
-     /* :TODO:11/05/2013 03:24:08 PM:: warp between shmctl and NVRDescr */
+/* :TODO:11/05/2013 03:24:08 PM:: warp between shmctl and NVRDescr */
     if (flag==1) {// initiate the meta data of this region
         nvrAddr->size = size;
         nvrAddr->refKey = keyNVRegion;
@@ -96,13 +96,27 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
         nvrAddr->processCnt = shmDsPtr->shm_nattch; // 1 is the initial value
         nvrAddr->nvRootCnt = 0; // 0 is the initial value
         nvrAddr->ID = shmId;
-    }else{
+        memset(nvrAddr->name, '\0', sizeof(nvrAddr->name));
+        strcpy(nvrAddr->name,name);
+        nvrAddr->nameLen = nameLen;
+/* :TODO:11/06/2013 12:53:07 PM:: initiate the rootmap */
+    } else {
         // update NVRDescr
         nvrAddr->processCnt = shmDsPtr->shm_nattch; // 1 is the initial value
     }
 
     return nvrAddr;
 }
+
+
+
+void NVRDescrDump(NVRDescr *nvrAddr){
+    printf("--------------- NVRDescr DUMP -----------------------\n");
+    printf("name        size        addr        value       \n");
+    printf("size       %3d        %lx        %ld       \n",sizeof(long), (unsigned long)nvrAddr->size, nvrAddr->size);
+}
+
+
 
 
 

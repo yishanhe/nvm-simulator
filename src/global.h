@@ -26,7 +26,7 @@
 #define DEBUG
 
 #define NV_MAXPATH  128// maximum file name length
-#define NVROOT_MAXPATH  128// maximum file name length
+#define NVROOT_MAXPATH  32// maximum file name length
 #define offset2addr(base,off) ((void *)((base)+(off)))
 #define addr2offset(base,addr) ((void *)((addr)-(base)))
 #define e(msg) {perror(msg);exit(EXIT_FAILURE);}
