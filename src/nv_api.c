@@ -73,10 +73,7 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
             // successfully create this shm
             flag = 1;
             // get stat here
-            if ((shmctl(shmId,IPC_STAT,&shmDsBuf))<0) {
-                e("NVOpenRegion shmctl error");
-            }
-        }else
+          }else
             e("NVOpenRegion shmget error");
     }
 
@@ -84,6 +81,11 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
     if ((shmPtr = shmat(shmId,startingAddr,0) )==(void *)-1) {
         e("NVOpenRegion shmat error");
     }
+    // get shm_ds
+    if ((shmctl(shmId,IPC_STAT,&shmDsBuf))<0) {
+        e("NVOpenRegion shmctl error");
+    }
+
 
     nvrAddr = (NVRDescr *)shmPtr;
 
@@ -93,27 +95,95 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
         nvrAddr->refKey = keyNVRegion;
         nvrAddr->rootMapOffset =  size; // the end of region, should be a relative address
         nvrAddr->shareFlag = SHARE;
+        //printf("shm_nattch is %d\n",shmDsPtr->shm_nattch);
+ /* :TODO:11/06/2013 08:43:02 PM:: shm_nattch update */
         nvrAddr->processCnt = shmDsPtr->shm_nattch; // 1 is the initial value
         nvrAddr->nvRootCnt = 0; // 0 is the initial value
         nvrAddr->ID = shmId;
+        nvrAddr->nameLen = nameLen;
         memset(nvrAddr->name, '\0', sizeof(nvrAddr->name));
         strcpy(nvrAddr->name,name);
-        nvrAddr->nameLen = nameLen;
 /* :TODO:11/06/2013 12:53:07 PM:: initiate the rootmap */
     } else {
         // update NVRDescr
         nvrAddr->processCnt = shmDsPtr->shm_nattch; // 1 is the initial value
+        nvrAddr->refKey = keyNVRegion;
     }
 
     return nvrAddr;
 }
 
 
+/*
+ * ===  FUNCTION  ======================================================================
+ *         Name:  NVDeleteRegion
+ *  Description:
+ * =====================================================================================
+ */
+int NVDeleteRegion(char * name) {
+    key_t keyNVRegion;
+    struct shmid_ds shmDsBuf,* shmDsPtr;
+    shmDsPtr = &shmDsBuf;
+    int shmId;
+    // get refKey
+    if ((keyNVRegion=ftok(name, 0))<0) {
+        perror("NVDeleteRegion ftok error");
+        return -1;
+    }
+    // get shmId,  otherwise error
+    // if this shm exists, size can be 0
+    if ((shmId=shmget(keyNVRegion,0,SHM_MODE))<=0) {
+        perror("NVDeleteRegion shmget error");
+        return -1;
+    }
+ /* :TODO:11/06/2013 10:58:02 PM:: return remaining processes */
+    // RM
+    if(shmctl(shmId,IPC_RMID,NULL)<0){
+        perror("NVDeleteRegion shmctl rmid error");
+        return -1;
+    }
+    return 0;
+}
 
+int NVCloseRegion(NVRDescr * addr) {
+    int shmId;
+    if ((shmId=shmget(addr->refKey,0,SHM_MODE))<=0) {
+        perror("NVCloseRegion shmget error");
+        return -1;
+    }
+    if (addr->processCnt>1) {
+        addr->processCnt--;
+        if (addr->processCnt==0) {
+            addr->refKey=NULL;
+        }
+    }
+    if ((shmdt(addr))<0) {
+        perror("NVCloseRegion shmdt error");
+        return -1;
+    }
+    return 0;
+}
+
+/*
+ * ===  FUNCTION  ======================================================================
+ *         Name:  NVRDescrDump
+ *  Description:
+ * =====================================================================================
+ */
 void NVRDescrDump(NVRDescr *nvrAddr){
     printf("--------------- NVRDescr DUMP -----------------------\n");
-    printf("name        size        addr        value       \n");
-    printf("size       %3d        %lx        %ld       \n",sizeof(long), (unsigned long)nvrAddr->size, nvrAddr->size);
+    printf("              size        addr                 value  \n");
+    printf("-----------------------------------------------------\n");
+    printf("size          %3ld         %lx         %ld\n",sizeof(long), (unsigned long)&nvrAddr->size, nvrAddr->size);
+    printf("refKey        %3ld         %lx         %ld\n",sizeof(NVKey_t), (unsigned long)&nvrAddr->refKey, nvrAddr->refKey);
+    printf("rootMapOffset %3ld         %lx         %ld\n",sizeof(long), (unsigned long)&nvrAddr->rootMapOffset, nvrAddr->rootMapOffset);
+    printf("shareFlag     %3ld         %lx         %d\n",sizeof(int), (unsigned long)&nvrAddr->shareFlag, nvrAddr->shareFlag);
+    printf("processCnt    %3ld         %lx         %d\n",sizeof(int), (unsigned long)&nvrAddr->processCnt, nvrAddr->processCnt);
+    printf("nvRootCnt     %3ld         %lx         %d\n",sizeof(int), (unsigned long)&nvrAddr->nvRootCnt, nvrAddr->nvRootCnt);
+    printf("ID            %3ld         %lx         %d\n",sizeof(int), (unsigned long)&nvrAddr->ID, nvrAddr->ID);
+    printf("nameLen       %3ld         %lx         %d\n",sizeof(int), (unsigned long)&nvrAddr->nameLen, nvrAddr->nameLen);
+    printf("name          %3ld         %lx         %s\n",sizeof(nvrAddr->name), (unsigned long)&nvrAddr->name, nvrAddr->name);
+    printf("-----------------------------------------------------\n");
 }
 
 
