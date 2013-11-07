@@ -107,7 +107,7 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
     } else {
         // update NVRDescr
         nvrAddr->processCnt = shmDsPtr->shm_nattch; // 1 is the initial value
-        nvrAddr->refKey = keyNVRegion;
+        nvrAddr->refKey = keyNVRegion; // it is possible that the keyNVRegion is null and needs to be updated
     }
 
     return nvrAddr;
@@ -138,7 +138,7 @@ int NVDeleteRegion(char * name) {
     }
  /* :TODO:11/06/2013 10:58:02 PM:: return remaining processes */
     // RM
-    if(shmctl(shmId,IPC_RMID,NULL)<0){
+    if (shmctl(shmId,IPC_RMID,NULL)<0) {
         perror("NVDeleteRegion shmctl rmid error");
         return -1;
     }
@@ -188,7 +188,35 @@ void NVRDescrDump(NVRDescr *nvrAddr){
 
 
 
+/*-----------------------------------------------------------------------------
+ *  DATA REGION RELATED API
+ *-----------------------------------------------------------------------------*/
 
 
+
+/*
+ * ===  FUNCTION  ======================================================================
+ *         Name:  NVNewRoot
+ *  Description:
+ * =====================================================================================
+ */
+int NVNewRoot(NVRDescr * addr, void *p, char * name) {
+    // this address should be transformed into offset
+
+}
+
+
+
+
+/*
+ * ===  FUNCTION  ======================================================================
+ *         Name:  NVFree
+ *  Description:
+ * =====================================================================================
+ */
+int NVFree(void * addr) {
+    // free this pointer, if this pointer is in the process' stack
+    //memset(addr, '\0', sizeof(nvrAddr->name));
+}
 
 
