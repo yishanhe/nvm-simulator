@@ -58,7 +58,7 @@ typedef struct NVRDescr_s {
 
 typedef struct NVRootmapItem_s {
     long location;
- //   size_t type;
+    size_t type;
     char name[NVROOT_MAXPATH];
 } NVRootmapItem_t;
 

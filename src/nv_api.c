@@ -93,7 +93,7 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
     if (flag==1) {// initiate the meta data of this region
         nvrAddr->size = size;
         nvrAddr->refKey = keyNVRegion;
-        nvrAddr->rootMapOffset =  size; // the end of region, should be a relative address
+        nvrAddr->rootMapOffset =  size-1-sizeof(NVRootmapItem_t); // the end of data region, should be a relative address
         nvrAddr->shareFlag = SHARE;
         //printf("shm_nattch is %d\n",shmDsPtr->shm_nattch);
  /* :TODO:11/06/2013 08:43:02 PM:: shm_nattch update */
@@ -192,6 +192,13 @@ void NVRDescrDump(NVRDescr *nvrAddr){
  *  DATA REGION RELATED API
  *-----------------------------------------------------------------------------*/
 
+/*
+ * ===  FUNCTION  ======================================================================
+ *         Name:  NVFetchRoot
+ *  Description:
+ * =====================================================================================
+ */
+
 
 
 /*
@@ -202,7 +209,9 @@ void NVRDescrDump(NVRDescr *nvrAddr){
  */
 int NVNewRoot(NVRDescr * addr, void *p, char * name) {
     // this address should be transformed into offset
+    NVRootmapItem_t * nvrmPtr;
 
+    for
 }
 
 

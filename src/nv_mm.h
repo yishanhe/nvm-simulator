@@ -10,8 +10,8 @@
  *       Revision:  none
  *       Compiler:  gcc
  *
- *         Author:  YOUR NAME (),
- *   Organization:
+ *         Author:  Syi,
+ *   Organization:  CS@WM
  *
  * =====================================================================================
  */
@@ -23,7 +23,7 @@
 
 #include "global.h"
 
-void nv_dataregion_init(NVRDescr * nvrAddr);
+NVRootmapItem_t * nv_dataregion_init(NVRDescr * nvrAddr);
 void nv_dataregion_deinit(NVRDescr * nvrAddr); // memset maybe
 void *nv_mm_sbrk(int incr);
 void nv_mm_reset_brk(void);
