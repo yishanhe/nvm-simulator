@@ -43,7 +43,14 @@ void nv_dataregion_deinit(NVRDescr * nvrAddr)
 
 void *nv_mm_sbrk(int incr){
     char *old_brk = nv_mm_brk;
+
+    if ((inc<0)||((nv_mm_brk+inc)>nv_mm_max_addr)) {
+        errno = ENOMEM;
+        e("nv_mm_brk fail");
+    }
+    // success
 }
+
 void nv_mm_reset_brk(){
     nv_mm_brk = nv_mm_start_brk;
 }
