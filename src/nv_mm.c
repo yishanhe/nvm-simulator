@@ -34,21 +34,25 @@ NVRootmapItem_t * nv_dataregion_init(NVRDescr * nvrAddr){
 //    nvrmPtr = offset2addr(nvrAddr,nvAddr->rootMapOffset);
 //    memset();
     nv_mm_max_addr = nvrAddr+nvrAddr->size;
-    nv_mm_start = nvrAddr+sizeof(NVRDescr);
+    nv_mm_start = nvrAddr+sizeof(NVRDescr);// start address of dataregion
     nv_mm_brk = nv_mm_start;
     return nvrmPtr;
 }
 
-void nv_dataregion_deinit(NVRDescr * nvrAddr)
+void nv_dataregion_deinit(NVRDescr * nvrAddr){
+    // do nothing
+}
 
 void *nv_mm_sbrk(int incr){
     char *old_brk = nv_mm_brk;
 
-    if ((inc<0)||((nv_mm_brk+inc)>nv_mm_max_addr)) {
+    if ((incr<0)||((nv_mm_brk+incr)>nv_mm_max_addr)) {
         errno = ENOMEM;
         e("nv_mm_brk fail");
     }
     // success
+    nv_mm_brk += incr;
+    return (void *) old_brk;
 }
 
 void nv_mm_reset_brk(){
@@ -57,8 +61,16 @@ void nv_mm_reset_brk(){
 
 
 size_t nv_dataregion_size(void) {
-
+    return (size_t) (nv_mm_brk-nv_mm_start_brk);
 }
 size_t nv_pagesize(void) {
     return (size_t) getpagesize();
+}
+
+void *nv_dataregion_lo() {
+    return (void *) nv_mm_start_brk;
+}
+
+void *nv_dataregion_hi() {
+    return (void *) (nv_mm_brk -1);
 }

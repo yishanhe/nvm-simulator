@@ -24,7 +24,9 @@
 #include "nv_api.h"
 
 extern int errno;
-
+extern char *nv_mm_start_brk;
+extern char *nv_mm_brk;
+extern char *nv_mm_max_addr;
 /*-----------------------------------------------------------------------------
  *
  *  this is reasonable since if we are using a share memory as nvregion,
@@ -93,7 +95,8 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
     if (flag==1) {// initiate the meta data of this region
         nvrAddr->size = size;
         nvrAddr->refKey = keyNVRegion;
-        nvrAddr->rootMapOffset =  size-1-sizeof(NVRootmapItem_t); // the end of data region, should be a relative address
+        nvrAddr->rootMapOffset =  size;
+        //nvrAddr->rootMapOffset =  size-1-sizeof(NVRootmapItem_t); // the end of data region, should be a relative address
         nvrAddr->shareFlag = SHARE;
         //printf("shm_nattch is %d\n",shmDsPtr->shm_nattch);
  /* :TODO:11/06/2013 08:43:02 PM:: shm_nattch update */
@@ -104,6 +107,7 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
         memset(nvrAddr->name, '\0', sizeof(nvrAddr->name));
         strcpy(nvrAddr->name,name);
 /* :TODO:11/06/2013 12:53:07 PM:: initiate the rootmap */
+
     } else {
         // update NVRDescr
         nvrAddr->processCnt = shmDsPtr->shm_nattch; // 1 is the initial value
@@ -209,9 +213,39 @@ void NVRDescrDump(NVRDescr *nvrAddr){
  */
 int NVNewRoot(NVRDescr * addr, void *p, char * name) {
     // this address should be transformed into offset
-    NVRootmapItem_t * nvrmPtr;
+    NVRootmapItem_t * nvrmPtrCurr= offset2addr(addr, addr->rootMapOffset);
+    NVRootmapItem_t  * nvrmPtrIdx=nvrmPtrCurr ;
+    long offset = addr2offset(addr,p);
+    // check name
+    int replicaName=0;
+    while((nvrmPtrIdx-addr)< addr->size){
+        if((strcmp(name,nvrmPtrIdx->name))==0){
+            replicaName++;
+        }
+        nvrmPtrIdx++; //  move to next existed rootmapitem
+    }
+    if (replicaName>1) {
+        DEBUG_OUTPUT("Error in RootMapItem structure!");
+        exit(EXIT_FAILURE);
+    } else if (replicaName==1) {
+        error=EEXIST;
+        e("NVNewRoot fail");
+    } else {
+        // create a new one
+        // need to check this ptr
+        // segment fault
+        if ((--nvrmPtrCurr)<=nv_mm_brk)
+        nvrmPtrCurr--; //  get space for a new rootmapitem
+        if (p==NULL){
+            nvrmPtrCurr->location =
+        }
+        nvrmPtrCurr->location = p;
+    }
 
-    for
+
+
+
+    // update meta data
 }
 
 
