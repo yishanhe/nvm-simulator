@@ -21,9 +21,17 @@
 
 int main(int argc, const char *argv[])
 {
-    NVRDescr_t * t = (NVRDescr *)malloc(sizeof(NVRDescr));
+    NVRDescr_t * t1 = (NVRDescr *)malloc(sizeof(NVRDescr));
+    NVRDescr_t * t2 = (NVRDescr *)malloc(sizeof(NVRDescr));
     printf("sizeof nvrdescr %d\n", sizeof(NVRDescr));
-    printf("sizeof name %d\n", sizeof(t->name));
+    printf("sizeof name %d\n", sizeof(t1->name));
+    printf("addr %p\n", t1);
+    printf("addr %p\n", t2);
+    char * t3="123123";
+    printf("addr %p\n", t3);
+    int a =100;
+    printf("addr %p\n", (void *)((void *)t2+a));
+
     return 0;
 }
 
