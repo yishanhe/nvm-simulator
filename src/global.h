@@ -27,8 +27,9 @@
 
 #define NV_MAXPATH  128// maximum file name length
 #define NVROOT_MAXPATH  32// maximum file name length
-#define offset2addr(base,off) ((void *)((base)+(off)))
-#define addr2offset(base,addr) ((void *)((addr)-(base)))
+// TODO check this marco
+#define offset2addr(base,off) ((void *)((void *)(base)+(long)(off)))
+#define addr2offset(base,addr) ((long)((void *)(addr)-(void *)(base)))
 #define e(msg) {perror(msg);exit(EXIT_FAILURE);}
 
 
@@ -47,6 +48,7 @@ typedef struct NVRDescr_s {
     long size;
     NVKey_t refKey;
     long rootMapOffset;
+    long dataRegionOffset;
     int shareFlag;
     int processCnt;
     int nvRootCnt;
@@ -61,6 +63,12 @@ typedef struct NVRootmapItem_s {
     size_t type;
     char name[NVROOT_MAXPATH];
 } NVRootmapItem_t;
+
+typedef struct NVDataRegionMM_s {
+    char *nv_mm_start_brk;
+    char *nv_mm_brk;
+    char *nv_mm_max_addr;
+} NVDRmm_t;
 
 extern int errno;
 #endif

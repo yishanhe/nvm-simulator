@@ -24,7 +24,9 @@
 #include "nv_api.h"
 
 extern int errno;
-
+//extern char *nv_mm_start_brk;
+//extern char *nv_mm_brk;
+//extern char *nv_mm_max_addr;
 /*-----------------------------------------------------------------------------
  *
  *  this is reasonable since if we are using a share memory as nvregion,
@@ -93,7 +95,9 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
     if (flag==1) {// initiate the meta data of this region
         nvrAddr->size = size;
         nvrAddr->refKey = keyNVRegion;
-        nvrAddr->rootMapOffset =  size-1-sizeof(NVRootmapItem_t); // the end of data region, should be a relative address
+        nvrAddr->rootMapOffset =  size;
+        nvrAddr->dataRegionOffset =  sizeof(NVRDescr);
+        //nvrAddr->rootMapOffset =  size-1-sizeof(NVRootmapItem_t); // the end of data region, should be a relative address
         nvrAddr->shareFlag = SHARE;
         //printf("shm_nattch is %d\n",shmDsPtr->shm_nattch);
  /* :TODO:11/06/2013 08:43:02 PM:: shm_nattch update */
@@ -104,6 +108,7 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
         memset(nvrAddr->name, '\0', sizeof(nvrAddr->name));
         strcpy(nvrAddr->name,name);
 /* :TODO:11/06/2013 12:53:07 PM:: initiate the rootmap */
+
     } else {
         // update NVRDescr
         nvrAddr->processCnt = shmDsPtr->shm_nattch; // 1 is the initial value
@@ -151,16 +156,17 @@ int NVCloseRegion(NVRDescr * addr) {
         perror("NVCloseRegion shmget error");
         return -1;
     }
-    if (addr->processCnt>1) {
+   if ((shmdt(addr))<0) {
+        perror("NVCloseRegion shmdt error");
+        return -1;
+    }
+   if (addr->processCnt>1) {
         addr->processCnt--;
         if (addr->processCnt==0) {
             addr->refKey=NULL;
         }
     }
-    if ((shmdt(addr))<0) {
-        perror("NVCloseRegion shmdt error");
-        return -1;
-    }
+
     return 0;
 }
 
@@ -203,13 +209,67 @@ void NVRDescrDump(NVRDescr *nvrAddr){
 
 /*
  * ===  FUNCTION  ======================================================================
+ *         Name:  NVFetchRoot
+ *  Description:
+ * =====================================================================================
+ */
+int NVFetchRoot(NVRDescr * addr, char * name) {
+    // check name
+    NVRootmapItem_t  * nvrmPtrIdx = offset2addr(addr, addr->rootMapOffset);
+}
+
+
+/*
+ * ===  FUNCTION  ======================================================================
  *         Name:  NVNewRoot
  *  Description:
  * =====================================================================================
  */
 int NVNewRoot(NVRDescr * addr, void *p, char * name) {
     // this address should be transformed into offset
-    NVRootmapItem_t * nvrmPtr;
+    NVRootmapItem_t * nvrmPtrCurr= offset2addr(addr, addr->rootMapOffset);
+    NVRootmapItem_t  * nvrmPtrIdx=nvrmPtrCurr ;
+    long offset = addr2offset(addr,p);
+    // check name
+    int replicaName=0;
+    //while((nvrmPtrIdx-addr)< addr->size){
+    while((addr2offset(addr,nvrmPtrIdx))< addr->size){
+        if((strcmp(name,nvrmPtrIdx->name))==0){
+            replicaName++;
+        }
+        nvrmPtrIdx++; //  move to next existed rootmapitem
+    }
+    if (replicaName>1) {
+        DEBUG_OUTPUT("Error in RootMapItem structure!");
+        exit(EXIT_FAILURE);// return -2
+    } else if (replicaName==1) {
+        errno=EEXIST;
+        e("NVNewRoot fail"); // return -1
+    } else {
+        // create a new one
+        // need to check this ptr
+        // segment fault
+        //if ((--nvrmPtrCurr)< addr->dataRegionOffset+addr){
+        if ((void *)(--nvrmPtrCurr)< offset2addr(addr,addr->dataRegionOffset)){
+        // this is safe to add one more item in rootmap
+
+        } else {
+            errno =ENOMEM;
+            e("NVNewRoot fail"); // return -1
+        }
+        nvrmPtrCurr--; //  get space for a new rootmapitem
+        if (p==NULL){
+            DEBUG_OUTPUT("Error in input address");
+            return -2;
+        } else {
+            nvrmPtrCurr->location = p;
+        }
+    }
+
+
+
+
+    // update meta data
 }
 
 
