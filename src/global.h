@@ -48,7 +48,7 @@ typedef struct NVRDescr_s {
     long size;
     NVKey_t refKey;
     long rootMapOffset;
-    long dataRegionOffset;
+    long dataRegionOffset; // brk
     int shareFlag;
     int processCnt;
     int nvRootCnt;

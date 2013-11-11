@@ -204,18 +204,17 @@ void NVRDescrDump(NVRDescr *nvrAddr){
  *  Description:
  * =====================================================================================
  */
-
-
-
-/*
- * ===  FUNCTION  ======================================================================
- *         Name:  NVFetchRoot
- *  Description:
- * =====================================================================================
- */
-int NVFetchRoot(NVRDescr * addr, char * name) {
+void * NVFetchRoot(NVRDescr * addr, char * name) {
     // check name
     NVRootmapItem_t  * nvrmPtrIdx = offset2addr(addr, addr->rootMapOffset);
+
+    while((addr2offset(addr,nvrmPtrIdx))< addr->size){
+        if((strcmp(name,nvrmPtrIdx->name))==0){
+            return (void *) nvrmPtrIdx;
+        }
+        nvrmPtrIdx++; //  move to next existed rootmapitem
+    }
+    return NULL;
 }
 
 
@@ -225,24 +224,24 @@ int NVFetchRoot(NVRDescr * addr, char * name) {
  *  Description:
  * =====================================================================================
  */
-int NVNewRoot(NVRDescr * addr, void *p, char * name) {
+int NVNewRoot(NVRDescr * addr, void *p, char * name, size_t size) {
     // this address should be transformed into offset
     NVRootmapItem_t * nvrmPtrCurr= offset2addr(addr, addr->rootMapOffset);
     NVRootmapItem_t  * nvrmPtrIdx=nvrmPtrCurr ;
-    long offset = addr2offset(addr,p);
     // check name
-    int replicaName=0;
-    //while((nvrmPtrIdx-addr)< addr->size){
-    while((addr2offset(addr,nvrmPtrIdx))< addr->size){
-        if((strcmp(name,nvrmPtrIdx->name))==0){
-            replicaName++;
-        }
-        nvrmPtrIdx++; //  move to next existed rootmapitem
-    }
-    if (replicaName>1) {
-        DEBUG_OUTPUT("Error in RootMapItem structure!");
-        exit(EXIT_FAILURE);// return -2
-    } else if (replicaName==1) {
+//    int replicaName=0;
+//    //while((nvrmPtrIdx-addr)< addr->size){
+//    while((addr2offset(addr,nvrmPtrIdx))< addr->size){
+//        if((strcmp(name,nvrmPtrIdx->name))==0){
+//            replicaName++;
+//        }
+//        nvrmPtrIdx++; //  move to next existed rootmapitem
+//    }
+//    if (replicaName>1) {
+//        DEBUG_OUTPUT("Error in RootMapItem structure!");
+//        exit(EXIT_FAILURE);// return -2
+//    } else if (replicaName==1) {
+    if (NVFetchRoot(addr,name)!=NULL) {
         errno=EEXIST;
         e("NVNewRoot fail"); // return -1
     } else {
@@ -252,7 +251,6 @@ int NVNewRoot(NVRDescr * addr, void *p, char * name) {
         //if ((--nvrmPtrCurr)< addr->dataRegionOffset+addr){
         if ((void *)(--nvrmPtrCurr)< offset2addr(addr,addr->dataRegionOffset)){
         // this is safe to add one more item in rootmap
-
         } else {
             errno =ENOMEM;
             e("NVNewRoot fail"); // return -1
@@ -262,14 +260,14 @@ int NVNewRoot(NVRDescr * addr, void *p, char * name) {
             DEBUG_OUTPUT("Error in input address");
             return -2;
         } else {
-            nvrmPtrCurr->location = p;
+            nvrmPtrCurr->location = addr2offset(addr,p);
+            nvrmPtrCurr->type = size;
+            strcpy(nvrmPtrCurr->location,name);
+            // update meta data
+            addr->rootMapOffset=addr2offset();
+            return 0;
         }
     }
-
-
-
-
-    // update meta data
 }
 
 
@@ -285,5 +283,24 @@ int NVFree(void * addr) {
     // free this pointer, if this pointer is in the process' stack
     //memset(addr, '\0', sizeof(nvrAddr->name));
 }
+
+
+
+/*-----------------------------------------------------------------------------
+ *  DATA REGIOIN MEM RELATED API
+ *-----------------------------------------------------------------------------*/
+
+/*
+ * ===  FUNCTION  ======================================================================
+ *         Name:  NVMalloc
+ *  Description:
+ * =====================================================================================
+ */
+
+void * NVMalloc(NVRDescr * addr, int size) {
+
+}
+
+
 
 
