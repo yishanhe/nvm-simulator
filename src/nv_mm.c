@@ -49,6 +49,8 @@ void *nv_mm_sbrk(int incr){
         e("nv_mm_brk fail");
     }
     // success
+    nv_mm_brk+=inc;
+
 }
 
 void nv_mm_reset_brk(){

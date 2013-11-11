@@ -210,8 +210,6 @@ void NVRDescrDump(NVRDescr *nvrAddr){
 int NVNewRoot(NVRDescr * addr, void *p, char * name) {
     // this address should be transformed into offset
     NVRootmapItem_t * nvrmPtr;
-
-    for
 }
 
 
