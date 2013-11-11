@@ -209,6 +209,18 @@ void NVRDescrDump(NVRDescr *nvrAddr){
 
 /*
  * ===  FUNCTION  ======================================================================
+ *         Name:  NVFetchRoot
+ *  Description:
+ * =====================================================================================
+ */
+int NVFetchRoot(NVRDescr * addr, char * name) {
+    // check name
+    NVRootmapItem_t  * nvrmPtrIdx = offset2addr(addr, addr->rootMapOffset);      
+}
+
+
+/*
+ * ===  FUNCTION  ======================================================================
  *         Name:  NVNewRoot
  *  Description:
  * =====================================================================================
