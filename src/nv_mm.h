@@ -23,30 +23,14 @@
 
 #include "global.h"
 
-//typedef struct NVDataRegionMM_s {
-//	// offset
-//    long nv_mm_start_brk;
-//    long nv_mm_brk;
-//    long nv_mm_max_addr;
-//} NVDRmm_t;
 
-typedef struct nv_mm_chunk_s {
-	// offset
-    long preCOffset;
-    long currCOffset;
-    long nextCOffset;
-} nv_mm_chunk_t;
+NVRootmapItem_t * nvmm_dataregion_init(NVRDescr * nvrAddr);
+void nvmm_dataregion_deinit(NVRDescr * nvrAddr); // memset maybe
+void *nvmm_sbrk(int incr);
+void nvmm_reset_brk(void);
+void *nvmm_dataregion_lo(void);
+void *nvmm_dataregion_hi(void);
 
-// design tag bit
-
-
-NVRootmapItem_t * nv_dataregion_init(NVRDescr * nvrAddr);
-void nv_dataregion_deinit(NVRDescr * nvrAddr); // memset maybe
-void *nv_mm_sbrk(int incr);
-void nv_mm_reset_brk(void);
-void *nv_dataregion_lo(void);
-void *nv_dataregion_hi(void);
-
-size_t nv_dataregion_size(void); // kinda a heap
-size_t nv_pagesize(void);
+size_t nvmm_dataregion_size(void); // kinda a heap
+size_t nvmm_pagesize(void);
 #endif   /* ----- #ifndef nv_mm_INC  ----- */

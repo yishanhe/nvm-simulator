@@ -80,7 +80,17 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
     }
 
     // shmat
-    if ((shmPtr = shmat(shmId,startingAddr,0) )==(void *)-1) {
+
+#ifdef  FIXMEMBASE
+    if ((shmPtr = shmat(shmId,membase,0) )==(void *)-1)
+#else      /* -----  not FIXMEMBASE  ----- */
+    if ((shmPtr = shmat(shmId,startingAddr,0) )==(void *)-1)
+#endif     /* -----  not FIXMEMBASE  ----- */
+    {
+        e("NVOpenRegion shmat error");
+    }
+    if ((void *)shmPtr!=membase){
+        errno = EFAULT;
         e("NVOpenRegion shmat error");
     }
     // get shm_ds
@@ -97,12 +107,9 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
         nvrAddr->refKey = keyNVRegion;
         nvrAddr->rootMapOffset =  size;
         nvrAddr->dataRegionOffset =  sizeof(NVRDescr);
-        //nvrAddr->rootMapOffset =  size-1-sizeof(NVRootmapItem_t); // the end of data region, should be a relative address
         nvrAddr->shareFlag = SHARE;
-        //printf("shm_nattch is %d\n",shmDsPtr->shm_nattch);
- /* :TODO:11/06/2013 08:43:02 PM:: shm_nattch update */
-        nvrAddr->processCnt = shmDsPtr->shm_nattch; // 1 is the initial value
-        nvrAddr->nvRootCnt = 0; // 0 is the initial value
+        nvrAddr->processCnt = shmDsPtr->shm_nattch;
+        nvrAddr->nvRootCnt = 0;
         nvrAddr->ID = shmId;
         nvrAddr->nameLen = nameLen;
         memset(nvrAddr->name, '\0', sizeof(nvrAddr->name));
@@ -127,7 +134,8 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
  */
 int NVDeleteRegion(char * name) {
     key_t keyNVRegion;
-    struct shmid_ds shmDsBuf,* shmDsPtr;
+    struct shmid_ds shmDsBuf;
+    struct shmid_ds * shmDsPtr;
     shmDsPtr = &shmDsBuf;
     int shmId;
     // get refKey
@@ -163,7 +171,7 @@ int NVCloseRegion(NVRDescr * addr) {
    if (addr->processCnt>1) {
         addr->processCnt--;
         if (addr->processCnt==0) {
-            addr->refKey=NULL;
+            addr->refKey=0;//NULL
         }
     }
 
@@ -225,31 +233,23 @@ void * NVFetchRoot(NVRDescr * addr, char * name) {
  * =====================================================================================
  */
 int NVNewRoot(NVRDescr * addr, void *p, char * name, size_t size) {
-    // this address should be transformed into offset
+    // check valid addr of p
+    long newRootOffset =  addr2offset(addr,p);
+    void * brk = offset2addr(addr,addr->dataRegionOffset);
+    if ( newRootOffset>=addr->rootMapOffset || newRootOffset<=sizeof(NVRDescr)) {
+        errno = EINVAL;
+        e("NVNewRoot fail");
+    }
+
     NVRootmapItem_t * nvrmPtrCurr= offset2addr(addr, addr->rootMapOffset);
     NVRootmapItem_t  * nvrmPtrIdx=nvrmPtrCurr ;
-    // check name
-//    int replicaName=0;
-//    //while((nvrmPtrIdx-addr)< addr->size){
-//    while((addr2offset(addr,nvrmPtrIdx))< addr->size){
-//        if((strcmp(name,nvrmPtrIdx->name))==0){
-//            replicaName++;
-//        }
-//        nvrmPtrIdx++; //  move to next existed rootmapitem
-//    }
-//    if (replicaName>1) {
-//        DEBUG_OUTPUT("Error in RootMapItem structure!");
-//        exit(EXIT_FAILURE);// return -2
-//    } else if (replicaName==1) {
+
     if (NVFetchRoot(addr,name)!=NULL) {
         errno=EEXIST;
         e("NVNewRoot fail"); // return -1
     } else {
-        // create a new one
-        // need to check this ptr
         // segment fault
-        //if ((--nvrmPtrCurr)< addr->dataRegionOffset+addr){
-        if ((void *)(--nvrmPtrCurr)< offset2addr(addr,addr->dataRegionOffset)){
+        if ((void *)(--nvrmPtrCurr)< brk){
         // this is safe to add one more item in rootmap
         } else {
             errno =ENOMEM;
@@ -260,11 +260,12 @@ int NVNewRoot(NVRDescr * addr, void *p, char * name, size_t size) {
             DEBUG_OUTPUT("Error in input address");
             return -2;
         } else {
-            nvrmPtrCurr->location = addr2offset(addr,p);
+            nvrmPtrCurr->location = p;
             nvrmPtrCurr->type = size;
             strcpy(nvrmPtrCurr->location,name);
             // update meta data
-            addr->rootMapOffset=addr2offset();
+            addr->rootMapOffset=addr2offset(membase,nvrmPtrCurr);
+            addr->nvRootCnt++;
             return 0;
         }
     }
@@ -283,6 +284,7 @@ int NVFree(void * addr) {
     // free this pointer, if this pointer is in the process' stack
     // memset(addr, '\0', sizeof(nvrAddr->name));
     // currently we do nothing
+    // update NVDescr
 }
 
 
@@ -302,7 +304,7 @@ void * NVMallocNaive(NVRDescr * addr, int size) {
     void * nvrmPtrBrk= offset2addr(addr, addr->dataRegionOffset);
     long newOffset = addr->dataRegionOffset+size;
     if (newOffset>=addr->rootMapOffset) {
-        error=ENOMEM;
+        errno=ENOMEM;
         e("NVMalloc fail");
     }
     // do the malloc

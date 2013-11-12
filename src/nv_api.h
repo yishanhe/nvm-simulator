@@ -29,7 +29,7 @@ int NVCloseRegion(NVRDescr * addr);
 void *NVFetchRoot(NVRDescr * addr, char *name);
 void *NVMalloc(NVRDescr * addr, int size);
 void *NVMallocNaive(NVRDescr * addr, int size);
-int NVNewRoot(NVRDescr * addr, void * p, char * name);
+int NVNewRoot(NVRDescr * addr, void * p, char * name,size_t size);
 int NVFree(void * addr);
 void NVRDescrDump(NVRDescr *nvrAddr);
 

@@ -23,53 +23,57 @@
 #include "nv_mm.h"
 
 
-static char *nv_mm_start_brk;
-static char *nv_mm_brk;
-static char *nv_mm_max_addr;
+static char *nvmm_start_brk;
+static char *nvmm_brk;
+static char *nvmm_max_addr;
 
-
-NVRootmapItem_t * nv_dataregion_init(NVRDescr * nvrAddr){
+// run this if rootmap count is 0
+NVRootmapItem_t * nv_rootmap_init(NVRDescr * nvrAddr){
     NVRootmapItem_t * nvrmPtr;
-    nvrmPtr = nvrAddr+nvrAddr->rootMapOffset;
-//    nvrmPtr = offset2addr(nvrAddr,nvAddr->rootMapOffset);
+    nvrmPtr = offset2addr(nvrAddr,nvrAddr->rootMapOffset);
 //    memset();
-    nv_mm_max_addr = nvrAddr+nvrAddr->size;
-    nv_mm_start = nvrAddr+sizeof(NVRDescr);// start address of dataregion
-    nv_mm_brk = nv_mm_start;
+    nvmm_max_addr = offset2addr(nvrAddr,nvrAddr->size);
+    nvmm_start_brk = offset2addr(nvrAddr,sizeof(NVRDescr));// start address of dataregion
+    nvmm_brk = nvmm_start;
     return nvrmPtr;
+}
+
+void nv_dataregion_init(NVRDescr *nvrAddr) {
+
 }
 
 void nv_dataregion_deinit(NVRDescr * nvrAddr){
     // do nothing
+    // update related data structure
 }
 
-void *nv_mm_sbrk(int incr){
-    char *old_brk = nv_mm_brk;
+void *nvmm_sbrk(int incr){
+    char *old_brk = nvmm_brk;
 
-    if ((incr<0)||((nv_mm_brk+incr)>nv_mm_max_addr)) {
+    if ((incr<0)||((nvmm_brk+incr)>nvmm_max_addr)) {
         errno = ENOMEM;
-        e("nv_mm_brk fail");
+        e("nvmm_brk fail");
     }
     // success
     return (void *) old_brk;
 }
 
-void nv_mm_reset_brk(){
-    nv_mm_brk = nv_mm_start_brk;
+void nvmm_reset_brk(){
+    nvmm_brk = nvmm_start_brk;
 }
 
 
 size_t nv_dataregion_size(void) {
-    return (size_t) (nv_mm_brk-nv_mm_start_brk);
+    return (size_t) (nvmm_brk-nvmm_start_brk);
 }
 size_t nv_pagesize(void) {
     return (size_t) getpagesize();
 }
 
 void *nv_dataregion_lo() {
-    return (void *) nv_mm_start_brk;
+    return (void *) nvmm_start_brk;
 }
 
 void *nv_dataregion_hi() {
-    return (void *) (nv_mm_brk -1);
+    return (void *) (nvmm_brk -1);
 }
