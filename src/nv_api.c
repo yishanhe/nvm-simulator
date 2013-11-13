@@ -22,11 +22,16 @@
 #include <sys/shm.h>
 #include <string.h>
 #include "nv_api.h"
+#include "nv_mm.h"
+
+#define ALIGNMENT 8
+#define ALIGN(size) (((size)+(ALIGNMENT-1))& ~0x7)
+#define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
 
 extern int errno;
-//extern char *nv_mm_start_brk;
-//extern char *nv_mm_brk;
-//extern char *nv_mm_max_addr;
+extern char *nv_mm_start_brk;
+extern char *nv_mm_brk;
+extern char *nv_mm_max_addr;
 /*-----------------------------------------------------------------------------
  *
  *  this is reasonable since if we are using a share memory as nvregion,
@@ -120,6 +125,9 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
         // update NVRDescr
         nvrAddr->processCnt = shmDsPtr->shm_nattch; // 1 is the initial value
         nvrAddr->refKey = keyNVRegion; // it is possible that the keyNVRegion is null and needs to be updated
+        // #ifdef  DEBUG
+        //     printf("%d\n",nvrAddr->refKey);
+        // #endif     /* -----  not DEBUG  ----- */
     }
 
     return nvrAddr;
@@ -134,9 +142,8 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
  */
 int NVDeleteRegion(char * name) {
     key_t keyNVRegion;
-    struct shmid_ds shmDsBuf;
-    struct shmid_ds * shmDsPtr;
-    shmDsPtr = &shmDsBuf;
+    //struct shmid_ds shmDsBuf;
+    //struct shmid_ds * shmDsPtr=&shmDsBuf;
     int shmId;
     // get refKey
     if ((keyNVRegion=ftok(name, 0))<0) {
@@ -159,21 +166,30 @@ int NVDeleteRegion(char * name) {
 }
 
 int NVCloseRegion(NVRDescr * addr) {
+    // DEBUG_OUTPUT("1");
     int shmId;
+// #ifdef  DEBUG
+//     printf("%d\n",addr->refKey);
+// #endif     /* -----  not DEBUG  ----- */
     if ((shmId=shmget(addr->refKey,0,SHM_MODE))<=0) {
         perror("NVCloseRegion shmget error");
         return -1;
     }
-   if ((shmdt(addr))<0) {
-        perror("NVCloseRegion shmdt error");
-        return -1;
-    }
-   if (addr->processCnt>1) {
+    // DEBUG_OUTPUT("2");
+    
+    if (addr->processCnt>1) {
         addr->processCnt--;
         if (addr->processCnt==0) {
             addr->refKey=0;//NULL
         }
+        //return 0;
     }
+
+    if ((shmdt(addr))<0) {
+        perror("NVCloseRegion shmdt error");
+        return -1;
+    }
+     
 
     return 0;
 }
@@ -242,7 +258,7 @@ int NVNewRoot(NVRDescr * addr, void *p, char * name, size_t size) {
     }
 
     NVRootmapItem_t * nvrmPtrCurr= offset2addr(addr, addr->rootMapOffset);
-    NVRootmapItem_t  * nvrmPtrIdx=nvrmPtrCurr ;
+//    NVRootmapItem_t  * nvrmPtrIdx=nvrmPtrCurr ;
 
     if (NVFetchRoot(addr,name)!=NULL) {
         errno=EEXIST;
@@ -285,6 +301,7 @@ int NVFree(void * addr) {
     // memset(addr, '\0', sizeof(nvrAddr->name));
     // currently we do nothing
     // update NVDescr
+    return 0;
 }
 
 
@@ -301,6 +318,7 @@ int NVFree(void * addr) {
  */
 
 void * NVMallocNaive(NVRDescr * addr, int size) {
+    /*
     void * nvrmPtrBrk= offset2addr(addr, addr->dataRegionOffset);
     long newOffset = addr->dataRegionOffset+size;
     if (newOffset>=addr->rootMapOffset) {
@@ -310,6 +328,26 @@ void * NVMallocNaive(NVRDescr * addr, int size) {
     // do the malloc
     (addr->dataRegionOffset)+=size;
     return (void *)offset2addr(addr,newOffset);
+    */
+    if(addr->nvRootCnt==0) {
+        nvmm_dataregion_init(addr);
+    }
+    else if(addr->nvRootCnt>0) {
+        nvmm_dataregion_update(addr);
+    }
+    else {
+        e("NVMalloc fail");
+    }
+
+    int newsize = ALIGN(size+SIZE_T_SIZE);
+    void *p = nvmm_sbrk(newsize);
+    if(p==(void *)-1) {
+        return NULL;
+    }
+    else {
+        *(size_t *)p = size;
+        return (void *)((char *)p+SIZE_T_SIZE);
+    }
 }
 
 

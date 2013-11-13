@@ -24,7 +24,9 @@
 #include "global.h"
 
 
-NVRootmapItem_t * nvmm_dataregion_init(NVRDescr * nvrAddr);
+NVRootmapItem_t * nvmm_rootmap_init(NVRDescr * nvrAddr);
+void nvmm_dataregion_init(NVRDescr *nvrAddr);
+void nvmm_dataregion_update(NVRDescr *nvrAddr);
 void nvmm_dataregion_deinit(NVRDescr * nvrAddr); // memset maybe
 void *nvmm_sbrk(int incr);
 void nvmm_reset_brk(void);

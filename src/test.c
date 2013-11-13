@@ -1,59 +1,32 @@
-/*
- * =====================================================================================
- *
- *       Filename:  test.c
- *
- *    Description:
- *
- *        Version:  1.0
- *        Created:  11/06/2013 01:19:40 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  YOUR NAME (),
- *   Organization:
- *
- * =====================================================================================
- */
-#include <stdlib.h>
-#include "global.h"
+#include "nv_mm.h"
 #include <stdio.h>
+#define ALIGNMENT 8
+#define ALIGN(size) (((size)+(ALIGNMENT-1))& ~0x7)
+#define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
 
-#define __LowTag(p)  (*((int *)(p)-1))
-#define __HiPreTag(p)  (*((int *)(p)-2))
+extern int errno;
+extern char *nv_mm_start_brk;
+extern char *nv_mm_brk;
+extern char *nv_mm_max_addr;
 
-int NVNewRoot(void *p) {
-    printf("sizeof p %d\n", sizeof(p));
-     printf("sizeof name in func %d\n", sizeof(((NVRDescr *)p)->name));
-}
 
-int main(int argc, const char *argv[])
+int main(int argc, char const *argv[])
 {
-    NVRDescr_t * t1 = (NVRDescr *)malloc(sizeof(NVRDescr));
-    NVRDescr_t * t2 = (NVRDescr *)malloc(sizeof(NVRDescr));
-    NVRDescr_t * t = (NVRDescr *)malloc(sizeof(NVRDescr));
-    printf("sizeof nvrdescr %d\n", sizeof(NVRDescr));
-    printf("sizeof name %d\n", sizeof(t->name));
-    printf("addr %lx\n", t);
-    t++;
-    printf("addr %lx\n", t);
-    NVNewRoot(t2);
-    printf("sizeof name %d\n", sizeof(t1->name));
-    printf("addr %p\n", t1);
-    printf("addr %p\n", t2);
-    char * t3="123123";
-    printf("addr %p\n", t3);
-    int a =100;
-    printf("addr %p\n", (void *)((void *)t2+a));
-   printf("addr %p\n", t3);
-    printf("low tag addr is %lx\n",__LowTag(t3));
-    printf("low tag addr is %lx\n",__LowTag(t3)&0xFFFFFFF8);
-    printf("low tag addr is %p\n",__LowTag(t3)&0xFFFFFFF8);
+	int size=9;
 
+    int newsize = ALIGN(size+SIZE_T_SIZE);
 
-    printf("low tag addr is %lx\n",(*((int *)(t3))));
-    printf("low tag addr is %lx\n",(*((int *)(t3)-1)));
-    printf("low tag addr is %lx\n",(*((int *)(t3)-2)));
-    return 0;
+    printf("the new size if %d\n", newsize);
+
+    // void *p = nvmm_sbrk(newsize);
+    // if(p==(void *)-1) {
+    //     return NULL;
+    // }
+    // else {
+    //     *(size_t *)p = size;
+    //     return (void *)((char *)p+SIZE_T_SIZE);
+    char * a="123123123";
+    printf("%p\n",a);
+    printf("%p\n",(size_t *)a );
+	return 0;
 }
-

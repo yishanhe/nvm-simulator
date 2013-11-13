@@ -19,9 +19,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include "global.h"
 #include "nv_mm.h"
 
+
+#define ALIGNMENT 8
+#define ALIGN(size) (((size)+(ALIGNMENT-1))& ~0x7)
+#define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
 
 static char *nvmm_start_brk;
 static char *nvmm_brk;
@@ -34,12 +39,20 @@ NVRootmapItem_t * nv_rootmap_init(NVRDescr * nvrAddr){
 //    memset();
     nvmm_max_addr = offset2addr(nvrAddr,nvrAddr->size);
     nvmm_start_brk = offset2addr(nvrAddr,sizeof(NVRDescr));// start address of dataregion
-    nvmm_brk = nvmm_start;
+    nvmm_brk = nvmm_start_brk;
     return nvrmPtr;
 }
 
-void nv_dataregion_init(NVRDescr *nvrAddr) {
+// run this if rootmap count is bigger than 0
+void nvmm_dataregion_init(NVRDescr *nvrAddr) {
+	nvmm_max_addr = offset2addr(nvrAddr,nvrAddr->rootMapOffset);
+    nvmm_start_brk = offset2addr(nvrAddr,sizeof(NVRDescr));// start address of dataregion
+    nvmm_brk = offset2addr(nvrAddr, nvrAddr->dataRegionOffset);
+}
 
+void nvmm_dataregion_update(NVRDescr *nvrAddr) {
+	nvrAddr->rootMapOffset = addr2offset(membase,nvmm_max_addr);
+	nvrAddr->dataRegionOffset = addr2offset(membase,nvmm_brk);
 }
 
 void nv_dataregion_deinit(NVRDescr * nvrAddr){

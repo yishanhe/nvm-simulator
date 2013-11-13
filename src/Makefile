@@ -35,7 +35,7 @@ PROFILE        := NO
 EXECUTABLE      := main
 
 # ------------  list of all source files  --------------------------------------
-SOURCES         := main.c nv_api.c 
+SOURCES         := main.c nv_api.c nv_mm.c 
 
 # ------------  compiler  ------------------------------------------------------
 CC              := gcc
