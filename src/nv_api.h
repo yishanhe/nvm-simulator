@@ -32,5 +32,6 @@ void *NVMallocNaive(NVRDescr * addr, int size);
 int NVNewRoot(NVRDescr * addr, void * p, char * name,size_t size);
 int NVFree(void * addr);
 void NVRDescrDump(NVRDescr *nvrAddr);
+void NVRootmapDump(NVRDescr *nvrAddr);
 
 #endif   /* ----- #ifndef nv_api_INC  ----- */

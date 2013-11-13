@@ -176,7 +176,7 @@ int NVCloseRegion(NVRDescr * addr) {
         return -1;
     }
     // DEBUG_OUTPUT("2");
-    
+
     if (addr->processCnt>1) {
         addr->processCnt--;
         if (addr->processCnt==0) {
@@ -189,7 +189,7 @@ int NVCloseRegion(NVRDescr * addr) {
         perror("NVCloseRegion shmdt error");
         return -1;
     }
-     
+
 
     return 0;
 }
@@ -216,7 +216,16 @@ void NVRDescrDump(NVRDescr *nvrAddr){
     printf("-----------------------------------------------------\n");
 }
 
-
+void NVRootmapDump(NVRDescr *nvrAddr){
+    NVRootmapItem_t  * nvrmPtrIdx = offset2addr(nvrAddr, nvrAddr->rootMapOffset);
+    printf("--------------- NVRootmapDump DUMP ------------------\n");
+    printf("                  type       location        name  \n");
+    while((addr2offset(nvrAddr,nvrmPtrIdx))< nvrAddr->size){
+        printf("rootmap          %3ld         %lx         %s\n",nvrmPtrIdx->type, (unsigned long)nvrmPtrIdx->location, nvrmPtrIdx->name);    
+        nvrmPtrIdx++; //  move to next existed rootmapitem
+    }
+    return NULL;
+}
 
 /*-----------------------------------------------------------------------------
  *  DATA REGION RELATED API
@@ -252,6 +261,7 @@ int NVNewRoot(NVRDescr * addr, void *p, char * name, size_t size) {
     // check valid addr of p
     long newRootOffset =  addr2offset(addr,p);
     void * brk = offset2addr(addr,addr->dataRegionOffset);
+    // DEBUG_OUTPUT("test");
     if ( newRootOffset>=addr->rootMapOffset || newRootOffset<=sizeof(NVRDescr)) {
         errno = EINVAL;
         e("NVNewRoot fail");
@@ -259,31 +269,38 @@ int NVNewRoot(NVRDescr * addr, void *p, char * name, size_t size) {
 
     NVRootmapItem_t * nvrmPtrCurr= offset2addr(addr, addr->rootMapOffset);
 //    NVRootmapItem_t  * nvrmPtrIdx=nvrmPtrCurr ;
-
+// DEBUG_OUTPUT("test");
     if (NVFetchRoot(addr,name)!=NULL) {
         errno=EEXIST;
         e("NVNewRoot fail"); // return -1
     } else {
-        // segment fault
-        if ((void *)(--nvrmPtrCurr)< brk){
-        // this is safe to add one more item in rootmap
+        // DEBUG_OUTPUT("test");
+        // // segment fault
+        // #ifdef  DEBUG
+        //     printf("%p\n",nvrmPtrCurr);
+        //     printf("%p\n",brk);
+        // #endif
+        if ((void *)(--nvrmPtrCurr)> brk){
+            if (p==NULL){
+                DEBUG_OUTPUT("Error in input address");
+                return -2;
+            } else {
+                // DEBUG_OUTPUT("test");
+                nvrmPtrCurr->location = p;
+                nvrmPtrCurr->type = size;
+                strcpy(nvrmPtrCurr->name,name);
+                // update meta data
+                addr->rootMapOffset=addr2offset(membase,nvrmPtrCurr);
+                addr->nvRootCnt++;
+                return 0;
+            }
         } else {
             errno =ENOMEM;
             e("NVNewRoot fail"); // return -1
         }
-        nvrmPtrCurr--; //  get space for a new rootmapitem
-        if (p==NULL){
-            DEBUG_OUTPUT("Error in input address");
-            return -2;
-        } else {
-            nvrmPtrCurr->location = p;
-            nvrmPtrCurr->type = size;
-            strcpy(nvrmPtrCurr->location,name);
-            // update meta data
-            addr->rootMapOffset=addr2offset(membase,nvrmPtrCurr);
-            addr->nvRootCnt++;
-            return 0;
-        }
+        // DEBUG_OUTPUT("test");
+
+
     }
 }
 
