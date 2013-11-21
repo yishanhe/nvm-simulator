@@ -40,25 +40,13 @@
 #define NV_MAXPATH  128// maximum file name length
 #define NVROOT_MAXPATH  32// maximum file name length
 #define SHM_MODE 0660 // user and same group user read and write
-#define SHM_SIZE 100000
+#define SHM_SIZE 100000 // (20*(1<<20)) //20MB
 #define offset2addr(base,off) ((void *)((void *)(base)+(long)(off)))
 #define addr2offset(base,addr) ((long)((void *)(addr)-(void *)(base)))
 #define PAGESIZE 4096 //4k
 
 #define membase (void *)0x80000000
 //#define membase 0x1000000000L
-/*-----------------------------------------------------------------------------
- *  DEBUG
- *-----------------------------------------------------------------------------*/
-#define e(msg) {perror(msg);exit(EXIT_FAILURE);}
-
-#ifdef  DEBUG
-    #define DEBUG_OUTPUT(string) (printf("[DEBUG] %s\n",string))
-#else      /* -----  not DEBUG  ----- */
-    #define DEBUG_OUTPUT(string)
-#endif     /* -----  not DEBUG  ----- */
-
-
 
 typedef long NVKey_t;
 
@@ -84,5 +72,31 @@ typedef struct NVRootmapItem_s {
 } NVRootmapItem_t;
 
 
+/*-----------------------------------------------------------------------------
+ *  DEBUG
+ *-----------------------------------------------------------------------------*/
+#define e(msg) {perror(msg);exit(EXIT_FAILURE);}
+
+#ifdef  DEBUG
+    #define DEBUG_OUTPUT(string) (printf("[DEBUG] %s\n",string))
+#else      /* -----  not DEBUG  ----- */
+    #define DEBUG_OUTPUT(string)
+#endif     /* -----  not DEBUG  ----- */
+
+
 extern int errno;
+
+
+
+
+
+
+
+/*-----------------------------------------------------------------------------
+ *  NVRegionMeM
+ *-----------------------------------------------------------------------------*/
+#define ALIGNMENT 8
+// you can define MAX_HEAP here, according to the SHM_SIZE
+// #define MAX_HEAP (20*(1<<20)) //20MB
+
 #endif

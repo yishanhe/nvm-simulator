@@ -22,7 +22,7 @@
 #include "global.h"
 
 
-//  NVRegion APIs
+//  Required NVRegion APIs
 NVRDescr* NVOpenRegion(char * name, void *startingAddr, int size);
 int NVDeleteRegion(char * name);
 int NVCloseRegion(NVRDescr * addr);
@@ -31,6 +31,12 @@ void *NVMalloc(NVRDescr * addr, int size);
 void *NVMallocNaive(NVRDescr * addr, int size);
 int NVNewRoot(NVRDescr * addr, void * p, char * name,size_t size);
 int NVFree(void * addr);
+
+//  Extra NVRegion APIs
+
+NVRootmapItem_t* getNVRootMapPtr(NVRDescr * nvrAddr);
+
+//  DEBUG NVRegion APIs
 void NVRDescrDump(NVRDescr *nvrAddr);
 void NVRootmapDump(NVRDescr *nvrAddr);
 

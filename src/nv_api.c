@@ -23,10 +23,8 @@
 #include <string.h>
 #include "nv_api.h"
 #include "nv_mm.h"
+#include "global.h"
 
-#define ALIGNMENT 8
-#define ALIGN(size) (((size)+(ALIGNMENT-1))& ~0x7)
-#define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
 
 extern int errno;
 extern char *nv_mm_start_brk;
@@ -120,11 +118,14 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
         memset(nvrAddr->name, '\0', sizeof(nvrAddr->name));
         strcpy(nvrAddr->name,name);
 /* :TODO:11/06/2013 12:53:07 PM:: initiate the rootmap */
+        nvmm_dataregion_init(nvrAddr);
 
     } else {
         // update NVRDescr
         nvrAddr->processCnt = shmDsPtr->shm_nattch; // 1 is the initial value
-        nvrAddr->refKey = keyNVRegion; // it is possible that the keyNVRegion is null and needs to be updated
+        nvrAddr->refKey = keyNVRegion; // it is possible that the keyNVRegion is null and needs to be update
+        // update global pointer
+        nvmm_dataregion_init(nvrAddr); 
         // #ifdef  DEBUG
         //     printf("%d\n",nvrAddr->refKey);
         // #endif     /* -----  not DEBUG  ----- */
@@ -334,6 +335,22 @@ int NVFree(void * addr) {
  * =====================================================================================
  */
 
+
+void * NVMallocNaive(NVRDescr * addr, int size) {
+
+    if(addr->nvRootCnt==0) {
+        nvmm_dataregion_init(addr);
+    }
+    else if(addr->nvRootCnt>0) {
+        nvmm_dataregion_update(addr);
+    }
+    else {
+        e("NVMalloc fail");
+    }
+
+}
+
+
 void * NVMallocNaive(NVRDescr * addr, int size) {
     /*
     void * nvrmPtrBrk= offset2addr(addr, addr->dataRegionOffset);
@@ -369,4 +386,16 @@ void * NVMallocNaive(NVRDescr * addr, int size) {
 
 
 
+/*-----------------------------------------------------------------------------
+ * EXTRA API
+ *-----------------------------------------------------------------------------*/
 
+NVRootmapItem_t * getNVRootMapPtr(NVRDescr * nvrAddr){
+    NVRootmapItem_t * nvrmPtr;
+    nvrmPtr = offset2addr(nvrAddr,nvrAddr->rootMapOffset);
+//    memset();
+   // nvmm_max_addr = offset2addr(nvrAddr,nvrAddr->size);
+   // nvmm_start_brk = offset2addr(nvrAddr,sizeof(NVRDescr));// start address of dataregion
+  //  nvmm_brk = nvmm_start_brk;
+    return nvrmPtr;
+}

@@ -1,15 +1,3 @@
-/*-------------------------------------------------------------------
- *  Malloc lab Starter code: 
- *        single doubly-linked free block list with LIFO policy
- *        with support for coalescing adjacent free blocks
- *
- * Terminology:
- * o We will implement an explicit free list allocator
- * o We use "next" and "previous" to refer to blocks as ordered in
- *   the free list.
- * o We use "following" and "preceding" to refer to adjacent blocks
- *   in memory.
- *-------------------------------------------------------------------- */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,8 +5,9 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "memlib.h"
+#include "nv_mm.h"
 #include "mm.h"
+#include "global.h"
 
 /* Macros for unscaled pointer arithmetic to keep other code cleaner.  
    Casting to a char* has the effect that pointer arithmetic happens at
@@ -75,18 +64,6 @@ struct BlockInfo {
 };
 typedef struct BlockInfo BlockInfo;
 
-team_t team = {
-    /* Team name to be displayed on webpage */
-    "explicit first fit",
-    /* First member full name */
-    "Harry Q. Bovik",
-    /* First member email address */
-    "bovik",
-    /* Second member full name (leave blank if none) */
-    "Andrew Carnegie",
-    /* Second member email address (blank if none) */
-    "ac"
-};
 /* Pointer to the first BlockInfo in the free list, the list's head. 
    
    A pointer to the head of the free list in this implementation is
@@ -95,7 +72,7 @@ team_t team = {
    mem_heap_lo() to a BlockInfo** (a pointer to a pointer to
    BlockInfo) and dereference this to get a pointer to the first
    BlockInfo in the free list. */
-#define FREE_LIST_HEAD *((BlockInfo **)mem_heap_lo())
+#define FREE_LIST_HEAD *((BlockInfo **)nvmm_heap_lo())
 
 /* Size of a word on this architecture. */
 #define WORD_SIZE sizeof(void*)
@@ -250,13 +227,13 @@ static void coalesceFreeBlock(BlockInfo* oldBlock) {
 
 /* Get more heap space of size at least reqSize. */
 static void requestMoreSpace(size_t reqSize) {
-  size_t pagesize = mem_pagesize();
+  size_t pagesize = nvmm_pagesize();
   size_t numPages = (reqSize + pagesize - 1) / pagesize;
   BlockInfo *newBlock;
   size_t totalSize = numPages * pagesize;
   size_t prevLastWordMask;
 
-  void* mem_sbrk_result = mem_sbrk(totalSize);
+  void* mem_sbrk_result = nvmm_sbrk(totalSize);
   if ((size_t)mem_sbrk_result == -1) {
     printf("ERROR: mem_sbrk failed in requestMoreSpace\n");
     exit(0);
@@ -297,7 +274,7 @@ int mm_init () {
   size_t initSize = WORD_SIZE+MIN_BLOCK_SIZE+WORD_SIZE;
   size_t totalSize;
 
-  void* mem_sbrk_result = mem_sbrk(initSize);
+  void* mem_sbrk_result = nvmm_sbrk(initSize);
   //  printf("mem_sbrk returned %p\n", mem_sbrk_result);
   if ((ssize_t)mem_sbrk_result == -1) {
     printf("ERROR: mem_sbrk failed in mm_init, returning %p\n", 
@@ -323,7 +300,7 @@ int mm_init () {
   
   // Tag "useless" word at end of heap as used.
   // This is the is the heap-footer.
-  *((size_t*)UNSCALED_POINTER_SUB(mem_heap_hi(), WORD_SIZE - 1)) = TAG_USED;
+  *((size_t*)UNSCALED_POINTER_SUB(nvmm_dataregion_hi(), WORD_SIZE - 1)) = TAG_USED;
 
   // set the head of the free list to this new free block.
   FREE_LIST_HEAD = firstFreeBlock;
@@ -434,6 +411,8 @@ int mm_check() {
 }
 
 // Extra credit.
+// 
+/* 
 void* mm_realloc(void* ptr, size_t size) {
   printf("This is mm_realloc\n");
   // ... implementation here ...
@@ -501,6 +480,7 @@ void* mm_realloc(void* ptr, size_t size) {
   mm_free(ptr);
   return ptrNew;
 }
+*/
 
 static void examine_heap() {
   BlockInfo *block;
@@ -508,8 +488,8 @@ static void examine_heap() {
   /* print to stderr so output isn't buffered and not output if we crash */
   fprintf(stderr, "FREE_LIST_HEAD: %p\n", (void *)FREE_LIST_HEAD);
 
-  for(block = (BlockInfo *)UNSCALED_POINTER_ADD(mem_heap_lo(), WORD_SIZE); /* first block on heap */
-      SIZE(block->sizeAndTags) != 0 && block < mem_heap_hi();
+  for(block = (BlockInfo *)UNSCALED_POINTER_ADD(nvmm_heap_lo(), WORD_SIZE); /* first block on heap */
+      SIZE(block->sizeAndTags) != 0 && block < nvmm_heap_hi();
       block = (BlockInfo *)UNSCALED_POINTER_ADD(block, SIZE(block->sizeAndTags))) {
 
     /* print out common block attributes */
