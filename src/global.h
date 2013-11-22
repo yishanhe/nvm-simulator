@@ -40,7 +40,8 @@
 #define NV_MAXPATH  128// maximum file name length
 #define NVROOT_MAXPATH  32// maximum file name length
 #define SHM_MODE 0660 // user and same group user read and write
-#define SHM_SIZE 100000 // (20*(1<<20)) //20MB
+//#define SHM_SIZE 500000 // (20*(1<<20)) //20MB
+#define SHM_SIZE (30*(1<<20)) //30MB
 #define offset2addr(base,off) ((void *)((void *)(base)+(long)(off)))
 #define addr2offset(base,addr) ((long)((void *)(addr)-(void *)(base)))
 #define PAGESIZE 4096 //4k
@@ -63,6 +64,7 @@ typedef struct NVRDescr_s {
     char name[NV_MAXPATH];
     // extra meta data for implementation
 } NVRDescr,NVRDescr_t;
+
 
 typedef struct NVRootmapItem_s {
     void * location;
@@ -88,15 +90,11 @@ extern int errno;
 
 
 
-
-
-
-
 /*-----------------------------------------------------------------------------
  *  NVRegionMeM
  *-----------------------------------------------------------------------------*/
 #define ALIGNMENT 8
 // you can define MAX_HEAP here, according to the SHM_SIZE
-// #define MAX_HEAP (20*(1<<20)) //20MB
-
+#define MAX_HEAP (20*(1<<20)) //20MB
+//#define MAX_HEAP 
 #endif

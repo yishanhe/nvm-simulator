@@ -22,14 +22,13 @@
 #include <sys/shm.h>
 #include <string.h>
 #include "nv_api.h"
-#include "nv_mm.h"
+#include "mm.h"
+#include "memlib.h"
 #include "global.h"
 
 
 extern int errno;
-extern char *nv_mm_start_brk;
-extern char *nv_mm_brk;
-extern char *nv_mm_max_addr;
+
 /*-----------------------------------------------------------------------------
  *
  *  this is reasonable since if we are using a share memory as nvregion,
@@ -118,14 +117,13 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
         memset(nvrAddr->name, '\0', sizeof(nvrAddr->name));
         strcpy(nvrAddr->name,name);
 /* :TODO:11/06/2013 12:53:07 PM:: initiate the rootmap */
-        nvmm_dataregion_init(nvrAddr);
-
+        // nvmm_dataregion_init(nvrAddr);
     } else {
         // update NVRDescr
         nvrAddr->processCnt = shmDsPtr->shm_nattch; // 1 is the initial value
         nvrAddr->refKey = keyNVRegion; // it is possible that the keyNVRegion is null and needs to be update
         // update global pointer
-        nvmm_dataregion_init(nvrAddr); 
+        // nvmm_dataregion_init(nvrAddr); 
         // #ifdef  DEBUG
         //     printf("%d\n",nvrAddr->refKey);
         // #endif     /* -----  not DEBUG  ----- */
@@ -293,6 +291,7 @@ int NVNewRoot(NVRDescr * addr, void *p, char * name, size_t size) {
                 // update meta data
                 addr->rootMapOffset=addr2offset(membase,nvrmPtrCurr);
                 addr->nvRootCnt++;
+                // update dataregion mem
                 return 0;
             }
         } else {
@@ -308,22 +307,6 @@ int NVNewRoot(NVRDescr * addr, void *p, char * name, size_t size) {
 
 
 
-/*
- * ===  FUNCTION  ======================================================================
- *         Name:  NVFree
- *  Description:
- * =====================================================================================
- */
-int NVFree(void * addr) {
-    // free this pointer, if this pointer is in the process' stack
-    // memset(addr, '\0', sizeof(nvrAddr->name));
-    // currently we do nothing
-    // update NVDescr
-    return 0;
-}
-
-
-
 /*-----------------------------------------------------------------------------
  *  DATA REGIOIN MEM RELATED API
  *-----------------------------------------------------------------------------*/
@@ -336,53 +319,75 @@ int NVFree(void * addr) {
  */
 
 
-void * NVMallocNaive(NVRDescr * addr, int size) {
+void * NVMalloc(NVRDescr * addr, int size) {
 
-    if(addr->nvRootCnt==0) {
-        nvmm_dataregion_init(addr);
-    }
-    else if(addr->nvRootCnt>0) {
-        nvmm_dataregion_update(addr);
-    }
-    else {
-        e("NVMalloc fail");
-    }
+
+
+
+// extern char *nv_mm_start_brk;
+// extern char *nv_mm_brk;
+// extern char *nv_mm_max_addr;
+    
+    void * newMemPtr = mm_malloc((size_t)size);
+    printf("newMemPtr is %p\n", newMemPtr);
+
+
+
+    return newMemPtr;
 
 }
 
 
-void * NVMallocNaive(NVRDescr * addr, int size) {
-    /*
-    void * nvrmPtrBrk= offset2addr(addr, addr->dataRegionOffset);
-    long newOffset = addr->dataRegionOffset+size;
-    if (newOffset>=addr->rootMapOffset) {
-        errno=ENOMEM;
-        e("NVMalloc fail");
-    }
-    // do the malloc
-    (addr->dataRegionOffset)+=size;
-    return (void *)offset2addr(addr,newOffset);
-    */
-    if(addr->nvRootCnt==0) {
-        nvmm_dataregion_init(addr);
-    }
-    else if(addr->nvRootCnt>0) {
-        nvmm_dataregion_update(addr);
-    }
-    else {
-        e("NVMalloc fail");
-    }
 
-    int newsize = ALIGN(size+SIZE_T_SIZE);
-    void *p = nvmm_sbrk(newsize);
-    if(p==(void *)-1) {
-        return NULL;
-    }
-    else {
-        *(size_t *)p = size;
-        return (void *)((char *)p+SIZE_T_SIZE);
-    }
+/*
+ * ===  FUNCTION  ======================================================================
+ *         Name:  NVFree
+ *  Description:
+ * =====================================================================================
+ */
+int NVFree(void * addr) {
+    // free this pointer, if this pointer is in the process' stack
+    // memset(addr, '\0', sizeof(nvrAddr->name));
+    // currently we do nothing
+    // update NVDescr
+    mm_free(addr);
+    return 0;
 }
+
+
+
+// void * NVMallocNaive(NVRDescr * addr, int size) {
+//     /*
+//     void * nvrmPtrBrk= offset2addr(addr, addr->dataRegionOffset);
+//     long newOffset = addr->dataRegionOffset+size;
+//     if (newOffset>=addr->rootMapOffset) {
+//         errno=ENOMEM;
+//         e("NVMalloc fail");
+//     }
+//     // do the malloc
+//     (addr->dataRegionOffset)+=size;
+//     return (void *)offset2addr(addr,newOffset);
+//     */
+//     if(addr->nvRootCnt==0) {
+//         nvmm_dataregion_init(addr);
+//     }
+//     else if(addr->nvRootCnt>0) {
+//         nvmm_dataregion_update(addr);
+//     }
+//     else {
+//         e("NVMalloc fail");
+//     }
+
+//     int newsize = ALIGN(size+SIZE_T_SIZE);
+//     void *p = nvmm_sbrk(newsize);
+//     if(p==(void *)-1) {
+//         return NULL;
+//     }
+//     else {
+//         *(size_t *)p = size;
+//         return (void *)((char *)p+SIZE_T_SIZE);
+//     }
+// }
 
 
 

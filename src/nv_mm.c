@@ -26,9 +26,6 @@
 #include "nv_mm.h"
 
 
-#define ALIGNMENT 8
-#define ALIGN(size) (((size)+(ALIGNMENT-1))& ~0x7)
-#define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
 
 static char *nvmm_start_brk;
 static char *nvmm_brk;
@@ -40,6 +37,11 @@ void nvmm_dataregion_init(NVRDescr *nvrAddr) {
 	nvmm_max_addr = offset2addr(nvrAddr,nvrAddr->rootMapOffset);
     nvmm_start_brk = offset2addr(nvrAddr,sizeof(NVRDescr));// start address of dataregion
     nvmm_brk = offset2addr(nvrAddr, nvrAddr->dataRegionOffset);
+
+    printf("nvmm_start_brk is %p\n", nvmm_start_brk);
+    printf("nvmm_brk is %p\n", nvmm_brk);
+    printf("nvmm_max_addr is %p\n", nvmm_max_addr);
+
 }
 
 void nvmm_dataregion_update(NVRDescr *nvrAddr) {

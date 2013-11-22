@@ -26,9 +26,9 @@
 #include <unistd.h>
 #include "global.h"
 #include "nv_api.h"
- #define ALIGNMENT 8
-#define ALIGN(size) (((size)+(ALIGNMENT-1))& ~0x7)
-#define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
+#include "nv_mm.h"
+#include "mm.h"
+
 
 int main(int argc, const char *argv[])
 {
@@ -54,14 +54,21 @@ int main(int argc, const char *argv[])
         DEBUG_OUTPUT("NVOpenRegion 1st Test Pass");
         NVRDescrDump(nvrAddr);
         // add data here
-        int size=100;
-        int * array=(int *)NVMallocNaive(nvrAddr, size);
+        int size=10;
+        int * array=(int *)NVMalloc(nvrAddr, size*sizeof(int));
+        printf("malloced array addr of root1 is  %p\n",array);
         int i;
-        for (i = 0; i < 100; ++i)
+        for (i = 0; i < size; ++i)
         {
             *(array+i)=i;
         }
-        printf("malloced array addr of root1 is  %p\n",array);
+        int j;
+        for (j = 0; j < size; ++j)
+        {
+            printf("the %d of array is %d\n", j,*((int *)array+j));
+        }
+
+
         if((NVNewRoot(nvrAddr, (void *)array, rootname, sizeof(int)))!=0){
             perror("Fail to NVNewRoot");
             exit(EXIT_FAILURE);
@@ -70,7 +77,7 @@ int main(int argc, const char *argv[])
         NVRootmapDump(nvrAddr);
         // #ifdef  DEBUG
         //     printf("%d\n",NVCloseRegion(nvrAddr));
-        // #endif   
+        // #endif
         sleep(5);
         if(NVCloseRegion(nvrAddr)!=0){
             perror("Fail to close region");
@@ -79,9 +86,10 @@ int main(int argc, const char *argv[])
         DEBUG_OUTPUT("NVCloseRegion Test Pass");
         //kill(pid,SIGUSR1)
     }else{
-        sleep(2);
+        //sleep(2);
+        sleep(20);
         printf("Parent's turn!\n");
-        
+
         nvrAddr = NVOpenRegion(name,0,SHM_SIZE);
         NVRDescrDump(nvrAddr);
         sleep(8);
@@ -92,7 +100,7 @@ int main(int argc, const char *argv[])
         //     exit(EXIT_FAILURE);
         // }
         // DEBUG_OUTPUT("NVCloseRegion Test Pass");
-       
+
         // nvrAddr = NVOpenRegion(name,0,SHM_SIZE);
         shmid = nvrAddr->ID;
         printf("parent shmid is %d\n",shmid);
@@ -100,28 +108,18 @@ int main(int argc, const char *argv[])
         NVRDescrDump(nvrAddr);
         DEBUG_OUTPUT("NVOpenRegion 2nd Test Pass");
         //char namee[]="/home/syi/GitRepo/nvm-simulator/nvm.daemon/NVRegion2";
-        
-        
+
+
         NVRootmapItem_t  * nvrmPtrIdx=(NVRootmapItem_t  *)NVFetchRoot(nvrAddr,rootname);
         printf("the nvrmPtrIdx is %p\n", nvrmPtrIdx);
         if (nvrmPtrIdx==NULL){
             perror("Fail to fetch root");
-            exit(EXIT_FAILURE);   
+            exit(EXIT_FAILURE);
         }
         void *p = nvrmPtrIdx->location;
         size_t type = nvrmPtrIdx->type;
         printf("type size is %d\n", type); // from this type we know it is int.
-    
-        printf("the size of array is %d\n", *((size_t *)(p-SIZE_T_SIZE) ) );
-        int arraylen = *((size_t *)(p-SIZE_T_SIZE) );
-        int j=0;
-        for (j = 0; j < arraylen; ++j)
-        {
-            printf("the %d of array is %d\n", j,*((int *)p+j));
-        }
 
-        //
-        //
         if(NVDeleteRegion(name)==-1){
             perror("Fail to delete region");
             exit(EXIT_FAILURE);

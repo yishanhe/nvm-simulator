@@ -28,7 +28,7 @@ int NVDeleteRegion(char * name);
 int NVCloseRegion(NVRDescr * addr);
 void *NVFetchRoot(NVRDescr * addr, char *name);
 void *NVMalloc(NVRDescr * addr, int size);
-void *NVMallocNaive(NVRDescr * addr, int size);
+//void *NVMallocNaive(NVRDescr * addr, int size);
 int NVNewRoot(NVRDescr * addr, void * p, char * name,size_t size);
 int NVFree(void * addr);
 
@@ -39,5 +39,9 @@ NVRootmapItem_t* getNVRootMapPtr(NVRDescr * nvrAddr);
 //  DEBUG NVRegion APIs
 void NVRDescrDump(NVRDescr *nvrAddr);
 void NVRootmapDump(NVRDescr *nvrAddr);
+
+extern int mm_init (void);
+extern void *mm_malloc (size_t size);
+extern void mm_free (void *ptr);
 
 #endif   /* ----- #ifndef nv_api_INC  ----- */

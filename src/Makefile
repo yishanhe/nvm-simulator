@@ -35,15 +35,16 @@ PROFILE        := NO
 EXECUTABLE      := main
 
 # ------------  list of all source files  --------------------------------------
-SOURCES         := main.c nv_api.c nv_mm.c 
+#SOURCES         := main.c nv_api.c nv_mm.c mm.c 
+SOURCES         := test.c nv_api.c mm.c memlib.c 
 
 # ------------  compiler  ------------------------------------------------------
 CC              := gcc
 CXX             := g++
 
 # ------------  compiler flags  ------------------------------------------------
-DEBUG_CFLAGS    := -Wall -O0 -g
-RELEASE_CFLAGS  := -Wall -O3
+DEBUG_CFLAGS    := -Wall -O0 -g -std=c99
+RELEASE_CFLAGS  := -Wall -O3 -std=c99
 
 # ------------  linker flags  --------------------------------------------------
 DEBUG_LDFLAGS    := -g
