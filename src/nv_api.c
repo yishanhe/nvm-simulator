@@ -118,6 +118,7 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
         strcpy(nvrAddr->name,name);
 /* :TODO:11/06/2013 12:53:07 PM:: initiate the rootmap */
         // nvmm_dataregion_init(nvrAddr);
+        mem_init();
     } else {
         // update NVRDescr
         nvrAddr->processCnt = shmDsPtr->shm_nattch; // 1 is the initial value
@@ -223,7 +224,6 @@ void NVRootmapDump(NVRDescr *nvrAddr){
         printf("rootmap          %3ld         %lx         %s\n",nvrmPtrIdx->type, (unsigned long)nvrmPtrIdx->location, nvrmPtrIdx->name);    
         nvrmPtrIdx++; //  move to next existed rootmapitem
     }
-    return NULL;
 }
 
 /*-----------------------------------------------------------------------------

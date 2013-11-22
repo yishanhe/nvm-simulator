@@ -71,6 +71,7 @@ typedef struct NVRootmapItem_s {
     // design tag bit
     size_t type;
     char name[NVROOT_MAXPATH];
+    // need a valid bit
 } NVRootmapItem_t;
 
 

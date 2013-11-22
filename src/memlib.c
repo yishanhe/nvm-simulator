@@ -1,8 +1,11 @@
 /*
- * memlib.c - a module that simulates the memory system.  Needed because it
- *            allows us to interleave calls from the student's malloc package
- *            with the system's malloc package in libc.
+ * =====================================================================================
+ *
+ *  Adapted from CSAPP of CMU
+ *
+ * =====================================================================================
  */
+ 
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>

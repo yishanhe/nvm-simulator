@@ -6,11 +6,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include "global.h"
 #include "nv_api.h"
 #include "memlib.h"
 #include "mm.h"
-#include <unistd.h>
+
 
 
 
@@ -60,6 +61,7 @@ int main(int argc, const char *argv[])
         perror("Fail to NVNewRoot");
         exit(EXIT_FAILURE);
     }
+    
     NVFree(array_shm);
 
 
