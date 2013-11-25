@@ -33,8 +33,8 @@ int main(int argc, const char *argv[])
     int pid;
     int child_status;
     NVRDescr * nvrAddr;
-    char name[]="/home/syi/GitRepo/nvm-simulator/nvm.daemon/NVRegion1";
-    //char name[]="/scratch/syi.scratch/GitRepo/nvm-simulator/nvm.daemon/NVRegion1";
+    //char name[]="/home/syi/GitRepo/nvm-simulator/nvm.daemon/NVRegion1";
+    char name[]="/scratch/syi.scratch/GitRepo/nvm-simulator/nvm.daemon/NVRegion1";
 
     // create shared memory
 
@@ -51,7 +51,7 @@ int main(int argc, const char *argv[])
         NVRDescrDump(nvrAddr);
         // #ifdef  DEBUG
         //     printf("%d\n",NVCloseRegion(nvrAddr));
-        // #endif   
+        // #endif
         sleep(5);
         if(NVCloseRegion(nvrAddr)!=0){
             perror("Fail to close region");
@@ -62,7 +62,7 @@ int main(int argc, const char *argv[])
     }else{
         sleep(2);
         printf("Parent's turn!\n");
-        
+
         nvrAddr = NVOpenRegion(name,0,SHM_SIZE);
         NVRDescrDump(nvrAddr);
         sleep(8);
@@ -73,7 +73,7 @@ int main(int argc, const char *argv[])
         //     exit(EXIT_FAILURE);
         // }
         // DEBUG_OUTPUT("NVCloseRegion Test Pass");
-       
+
         // nvrAddr = NVOpenRegion(name,0,SHM_SIZE);
         shmid = nvrAddr->ID;
         printf("parent shmid is %d\n",shmid);
