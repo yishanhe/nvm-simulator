@@ -20,12 +20,16 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/shm.h>
+#include <sys/mman.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include "nv_api.h"
 #include "mm.h"
 #include "memlib.h"
 #include "global.h"
-
+#include "GeneralHashFunctions.h"
 
 extern int errno;
 
@@ -47,15 +51,15 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
                         void * startingAddr,    /* starting addr */
                         int size)               /* region size. The real size is rounded up */
 {
- /* :TODO:11/05/2013 10:48:43 AM:: implement hash(name)->key, not rely on the file index any more */
- /* :WARNING:11/05/2013 03:36:26 PM:: the size maybe different  */
+
     int nameLen;
     // check name lenght
     if ((nameLen=strlen(name))>NV_MAXPATH){
         printf("NVOpenRegion name length is longer than NV_MAXPATH\n");
         exit(1);
     }
-
+    
+    
     key_t keyNVRegion;
     int shmId;
     struct shmid_ds shmDsBuf,* shmDsPtr;
@@ -66,8 +70,13 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
 
     if ((keyNVRegion=ftok(name, 0))<0) {
  /* :TODO:11/05/2013 10:52:10 AM:: reminder of creating backing file */
+        DEBUG_OUTPUT("Please create this file to back the memory.");
         e("NVOpenRegion ftok error");
     }
+
+    // unsigned int RSHash  (char* str, unsigned int len);
+
+#if defined(SHM)
     // get shmId, if not exist create
     if ((shmId=shmget(keyNVRegion,size,SHM_MODE))<=0) {
         if (errno==ENOENT){// this region is not exists, create a new one
@@ -99,7 +108,56 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
     if ((shmctl(shmId,IPC_STAT,&shmDsBuf))<0) {
         e("NVOpenRegion shmctl error");
     }
+#elif defined(MMAP)
+#ifdef  FIXMEMBASE
+    shmPtr = membase;
+#else      /* -----  not FIXMEMBASE  ----- */
+    shmPtr = startingAddr;
+#endif     /* -----  not FIXMEMBASE  ----- */
+    // open the file
+    int fd;
+    if ( (fd = open(name, O_RDWR, S_IRWXU)) < 0){
+        if (errno==ENOENT){// this region is not exists, create a new one
+            if ((fd = open(name, O_RDWR|O_CREAT, S_IRWXU)) < 0){
+                e("NVOpenRegion fd open error");
+            }
+            // successfully create this file
+            flag = 1;
+            // make it becomes certain size
+            int result = lseek(fd, SHM_SIZE-1, SEEK_SET);
+            if (result == -1) {
+                close(fd);
+                e("NVOpenRegion lseek error");
+            }
+            result = write(fd, "", 1);
+            if (result < 0) {
+                close(fd);
+                e("NVOpenRegion write at the end of file error");
+            }
+          }else
+            e("NVOpenRegion fd open error");
+    }
+    // get file stat
+    struct stat file_stat;
+    if ( fstat( fd, &file_stat) < 0 )
+    {
+        printf(" fstat wrong");
+        exit(1);
+    }
+    void *start_fp;
+    // check size here.
+    if( ( start_fp = mmap(shmPtr, file_stat.st_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0 )) == MAP_FAILED)
+    {
+        printf("mmap wrong");
+        exit(0);
+    }
+    // now you can close
+    close(fd);
+    shmId = RSHash  (name, nameLen);
+    // as long as the file exists, the shared memory exists.
 
+    // detect whether it is the first time mmap.
+#endif
 
     nvrAddr = (NVRDescr *)shmPtr;
 
@@ -110,7 +168,11 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
         nvrAddr->rootMapOffset =  size;
         nvrAddr->dataRegionOffset =  sizeof(NVRDescr);
         nvrAddr->shareFlag = SHARE;
-        nvrAddr->processCnt = shmDsPtr->shm_nattch;
+        #if defined(SHM)
+            nvrAddr->processCnt = shmDsPtr->shm_nattch; // better processCnt
+        #elif defined(MMAP)
+            nvrAddr->processCnt = 1;
+        #endif
         nvrAddr->nvRootCnt = 0;
         nvrAddr->ID = shmId;
         nvrAddr->nameLen = nameLen;
@@ -321,18 +383,8 @@ int NVNewRoot(NVRDescr * addr, void *p, char * name, size_t size) {
 
 void * NVMalloc(NVRDescr * addr, int size) {
 
-
-
-
-// extern char *nv_mm_start_brk;
-// extern char *nv_mm_brk;
-// extern char *nv_mm_max_addr;
-    
     void * newMemPtr = mm_malloc((size_t)size);
     printf("newMemPtr is %p\n", newMemPtr);
-
-
-
     return newMemPtr;
 
 }
@@ -346,10 +398,8 @@ void * NVMalloc(NVRDescr * addr, int size) {
  * =====================================================================================
  */
 int NVFree(void * addr) {
-    // free this pointer, if this pointer is in the process' stack
-    // memset(addr, '\0', sizeof(nvrAddr->name));
-    // currently we do nothing
     // update NVDescr
+    // @TODO What if you are freeing a NVRoot, design NVRootMap valid tag
     mm_free(addr);
     return 0;
 }
@@ -404,3 +454,6 @@ NVRootmapItem_t * getNVRootMapPtr(NVRDescr * nvrAddr){
   //  nvmm_brk = nvmm_start_brk;
     return nvrmPtr;
 }
+
+
+// isNVRoot
