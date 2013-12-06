@@ -313,6 +313,11 @@ int mm_init () {
   return 0;
 }
 
+// void mm_update () {
+//    BlockInfo *firstFreeBlock;
+//    firstFreeBlock = (BlockInfo*)UNSCALED_POINTER_ADD(mem_heap_lo(), WORD_SIZE);
+//    FREE_LIST_HEAD = firstFreeBlock;
+// }
 
 // TOP-LEVEL ALLOCATOR INTERFACE ------------------------------------
 

@@ -38,6 +38,19 @@ void mem_init(void)
   mem_brk = mem_start_brk;                  /* heap is empty initially */
 }
 
+// void mem_update(NVRDescr * nvrAddr)
+// {
+//   mem_start_brk = membase + sizeof(NVRDescr);
+//   mem_max_addr = mem_start_brk + MAX_HEAP;  /* max legal heap address */
+//   mem_brk = membase + nvrAddr->dataRegionOffset;             
+// }
+
+// void mem_update(NVRDescr *nvrAddr) {
+//   nvrAddr->rootMapOffset = addr2offset(membase,nvmm_max_addr);
+//   nvrAddr->dataRegionOffset = addr2offset(membase,nvmm_brk);
+// }
+
+
 /*
  * mem_deinit - free the storage used by the memory system model
  */

@@ -141,22 +141,25 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
     struct stat file_stat;
     if ( fstat( fd, &file_stat) < 0 )
     {
-        printf(" fstat wrong");
-        exit(1);
+        // printf(" fstat wrong");
+        // exit(1);
+        e("NVOpenRegion fstat error");
     }
     void *start_fp;
     // check size here.
+    // 
     if( ( start_fp = mmap(shmPtr, file_stat.st_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0 )) == MAP_FAILED)
     {
-        printf("mmap wrong");
-        exit(0);
+        // printf("mmap wrong");
+        // exit(0);
+        e("NVOpenRegion mmap error");
     }
     // now you can close
     close(fd);
-    shmId = RSHash  (name, nameLen);
+    shmId = RSHash  (name, nameLen); // provide shmid using hash
+    
     // as long as the file exists, the shared memory exists.
 
-    // detect whether it is the first time mmap.
 #endif
 
     nvrAddr = (NVRDescr *)shmPtr;
@@ -181,6 +184,11 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
 /* :TODO:11/06/2013 12:53:07 PM:: initiate the rootmap */
         // nvmm_dataregion_init(nvrAddr);
         mem_init();
+        if (mm_init()<0)
+        {
+            e("MVMalloc initialization error.");
+        }
+
     } else {
         // update NVRDescr
         nvrAddr->processCnt = shmDsPtr->shm_nattch; // 1 is the initial value
@@ -190,8 +198,14 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
         // #ifdef  DEBUG
         //     printf("%d\n",nvrAddr->refKey);
         // #endif     /* -----  not DEBUG  ----- */
-    }
+        mem_init();
 
+        // mem_init();
+        // if (mm_init()<0)
+        // {
+        //     e("MVMalloc initialization error.");
+        // }
+    }
     return nvrAddr;
 }
 
@@ -384,7 +398,7 @@ int NVNewRoot(NVRDescr * addr, void *p, char * name, size_t size) {
 void * NVMalloc(NVRDescr * addr, int size) {
 
     void * newMemPtr = mm_malloc((size_t)size);
-    printf("newMemPtr is %p\n", newMemPtr);
+    // printf("newMemPtr is %p\n", newMemPtr);
     return newMemPtr;
 
 }

@@ -1,17 +1,9 @@
 /*
  * =====================================================================================
  *
- *       Filename:  example1.c
+ *       Filename:  example2.c
  *
- *    Description:  example 1 array assignment:
- *
- *                  Create a NVRegion1
- *                  NVMalloc an int arrays(size=100)(array_shm)
- *                  NVNewRoot sets the array_shm address as the NVRoot.
- *                  Assignment value to this array
- *                  Print out the array value
- *                  Close this region
- *                  Quit.
+ *    Description:  example 2 Bubble Sort
  *
  *        Version:  1.0
  *        Created:  12/05/2013 01:45:31 PM
@@ -40,7 +32,6 @@
 #include "mm.h"
 
 
-
 void BubbleSort(int *a, int n);
 
 void BubbleSort(int *a, int n) {
@@ -55,6 +46,9 @@ void BubbleSort(int *a, int n) {
         }
     }
 }
+
+
+
 
 
 int Partition(int *array, int i, int j);
@@ -103,28 +97,40 @@ void QuickSort(int *array, int low, int high ) {
 }
 
 
-
 int main(int argc, const char *argv[])
 {
-    int shmid;
-    int pid;
-    int i,j;
-    // int child_status;
-    NVRDescr * nvrAddr;
-    char name[]="/home/syi/GitRepo/nvm-simulator/nvm.daemon/NVRegion1";
+    int shmid,j;
+
     char rootname1[]="root1";
-    //char name[]="/scratch/syi.scratch/GitRepo/nvm-simulator/nvm.daemon/NVRegion1";
+   // char name[]="/scratch/syi.scratch/GitRepo/nvm-simulator/nvm.daemon/NVRegion1";
+    char name[]="/home/syi/GitRepo/nvm-simulator/nvm.daemon/NVRegion1";
 
-
-    nvrAddr = NVOpenRegion(name,0,SHM_SIZE);
-    
-    // shmid = nvrAddr->ID;
-
-    // printf("The shmid is %d\n",shmid);
+    // open existed region 
+    NVRDescr * nvrAddr = NVOpenRegion(name,0,SHM_SIZE);
+    if (nvrAddr==NULL) {
+        e("NVOpenRegion fails");
+    }
     printf("base addr of nvr  %p\n",nvrAddr);
-
+    DEBUG_OUTPUT("NVOpenRegion Re-open Existed Region Test Pass");
+    
     NVRDescrDump(nvrAddr);
+    NVRootmapDump(nvrAddr);
+
+    // shmid = nvrAddr->ID;
+    // printf("The shmid is %d\n",shmid);
+    
+    // void *NVFetchRoot(NVRDescr * addr, char *name);
+    NVRootmapItem_t  * nvrmPtrIdx = (NVRootmapItem_t  *)NVFetchRoot(nvrAddr, rootname1);
+
+
+ //   int array_size = (int)nvrmPtrIdx->type;
     int array_size = 100;
+    printf("the array size is %d\n", array_size);
+ 
+    // get the array address
+    int * array_shm = (int *) nvrmPtrIdx->location;
+    printf("the array addr is %p\n", array_shm);
+  //  int * array = (int*)malloc(sizeof(int)*array_size);
 
 
     // if (mm_init()<0)
@@ -132,27 +138,25 @@ int main(int argc, const char *argv[])
     //     e("MVMalloc initialization error.");
     // }
 
-    int * array_shm = (int*)NVMalloc(nvrAddr,sizeof(int)*array_size);
-    printf("the array addr is %p\n", array_shm);
-    for (i = 0; i < array_size; ++i)
-    {
-        *(array_shm+i)=array_size-1-i;
-    }
-    for (j = 0; j < array_size; ++j)
+
+
+    // for (j = 0; j < array_size; ++j)
+    // {
+    //     printf("%d\n", *(array_shm+j));
+    // }
+
+    BubbleSort(array_shm,array_size);
+
+    for (j = 0; j < array_size; j++)
     {
         printf("%d\n", *(array_shm+j));
-    }
+    } 
 
-    if((NVNewRoot(nvrAddr, (void *)array_shm, rootname1, sizeof(int)))!=0){
-        perror("Fail to NVNewRoot");
-        exit(EXIT_FAILURE);
-    }
-
-    // NVFree(array_shm);
+    // NVFree(array_shm); // need to invalidate the correspoding nvroot
 
 
-    DEBUG_OUTPUT("NVNewRoot Test Pass");
-    NVRootmapDump(nvrAddr);
+    // NVRDescrDump(nvrAddr);
+    // NVRootmapDump(nvrAddr);
 
 
     if(NVCloseRegion(nvrAddr)!=0){
@@ -160,42 +164,17 @@ int main(int argc, const char *argv[])
         exit(EXIT_FAILURE);
     }
     DEBUG_OUTPUT("NVCloseRegion Test Pass");
+    //kill(pid,SIGUSR1)
 
 
-    
-    // nvrAddr = NVOpenRegion(name,0,SHM_SIZE);
-
-    // NVRootmapItem_t  * nvrmPtrIdx = (NVRootmapItem_t  *)NVFetchRoot(nvrAddr, rootname1);
-    // int * array_shm_fetched = (int *) nvrmPtrIdx->location;
-    // printf("the array addr is %p\n", array_shm_fetched);
-
-    // for (j = 0; j < array_size; ++j)
-    // {
-    //     printf("%d\n", *(array_shm_fetched+j));
-    // }
-
-
-    //  BubbleSort(array_shm_fetched,array_size);
-    // // QuickSort(array_shm_fetched,0,array_size-1);
-
-    // for (j = 0; j < array_size; ++j)
-    // {
-    //     printf("%d\n", *(array_shm_fetched+j));
-    // }
-
-    // if(NVCloseRegion(nvrAddr)!=0){
-    //     perror("Fail to close region");
-    //     exit(EXIT_FAILURE);
-    // }
-    // DEBUG_OUTPUT("NVCloseRegion Test Pass");
-
-    // if(NVDeleteRegion(name)==-1){
-    //     perror("Fail to delete region");
-    //     exit(EXIT_FAILURE);
-    // }
-    // DEBUG_OUTPUT("NVDeleteRegion Test Pass");
-
+    if(NVDeleteRegion(name)==-1){
+        perror("Fail to delete region");
+        exit(EXIT_FAILURE);
+    }
+    DEBUG_OUTPUT("NVDeleteRegion Test Pass");
 
 
     exit(EXIT_SUCCESS);
 }
+
+
