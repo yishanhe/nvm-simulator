@@ -3,19 +3,23 @@ nvm-simulator
 
 cs652 course project
 
+Simulate a non-volative memory using a chunk of main memory.
+Generally, process never share resourcces unless the shared memory. 
+This project is using this mechanism to implement a NVM simulator.
 
 
-
-#### Requirements
+#### Project Requirements
 - NVRegion related APIs
 - DataRegion realted APIs
 
 
 
-#### Assumptions
+#### Assumptions, requirements and limitations
+- System V Shared Memory support
 - All NVRegions are attached at the same starting address of the process address space.
-#### Limitations
-- 
+- The process won't crash and there is no power outage.
+- Currently, there is only file-level lock granularity (The programmer should be responsible for this).
+- NVMalloc and NVFree is not thread safe. 
 
 
 #### Credits
