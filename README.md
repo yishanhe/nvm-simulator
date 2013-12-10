@@ -6,9 +6,21 @@ cs652 course project
 
 
 
+#### Requirements
+- NVRegion related APIs
+- DataRegion realted APIs
 
 
 
+#### Assumptions
+- All NVRegions are attached at the same starting address of the process address space.
+#### Limitations
+- 
+
+
+#### Credits
+- CSAPP course project malloc lab implementation.
+- General Purpose Hash Function Algorithms Library by Arash Partow
 
 
 
