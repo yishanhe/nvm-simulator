@@ -58,8 +58,8 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
         printf("NVOpenRegion name length is longer than NV_MAXPATH\n");
         exit(1);
     }
-    
-    
+
+
     key_t keyNVRegion;
     int shmId;
     struct shmid_ds shmDsBuf,* shmDsPtr;
@@ -147,7 +147,7 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
     }
     void *start_fp;
     // check size here.
-    // 
+    //
     if( ( start_fp = mmap(shmPtr, file_stat.st_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0 )) == MAP_FAILED)
     {
         // printf("mmap wrong");
@@ -157,7 +157,7 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
     // now you can close
     close(fd);
     shmId = RSHash  (name, nameLen); // provide shmid using hash
-    
+
     // as long as the file exists, the shared memory exists.
 
 #endif
@@ -174,7 +174,7 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
         #if defined(SHM)
             nvrAddr->processCnt = shmDsPtr->shm_nattch; // better processCnt
         #elif defined(MMAP)
-            nvrAddr->processCnt = 1;
+            nvrAddr->processCnt = 1; // the process creates this shm, the processCnt will always be 1
         #endif
         nvrAddr->nvRootCnt = 0;
         nvrAddr->ID = shmId;
@@ -182,7 +182,6 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
         memset(nvrAddr->name, '\0', sizeof(nvrAddr->name));
         strcpy(nvrAddr->name,name);
 /* :TODO:11/06/2013 12:53:07 PM:: initiate the rootmap */
-        // nvmm_dataregion_init(nvrAddr);
         mem_init();
         if (mm_init()<0)
         {
@@ -193,8 +192,6 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
         // update NVRDescr
         nvrAddr->processCnt = shmDsPtr->shm_nattch; // 1 is the initial value
         nvrAddr->refKey = keyNVRegion; // it is possible that the keyNVRegion is null and needs to be update
-        // update global pointer
-        // nvmm_dataregion_init(nvrAddr); 
         // #ifdef  DEBUG
         //     printf("%d\n",nvrAddr->refKey);
         // #endif     /* -----  not DEBUG  ----- */
@@ -226,6 +223,7 @@ int NVDeleteRegion(char * name) {
         perror("NVDeleteRegion ftok error");
         return -1;
     }
+    #if defined(SHM)
     // get shmId,  otherwise error
     // if this shm exists, size can be 0
     if ((shmId=shmget(keyNVRegion,0,SHM_MODE))<=0) {
@@ -238,7 +236,15 @@ int NVDeleteRegion(char * name) {
         perror("NVDeleteRegion shmctl rmid error");
         return -1;
     }
+    #elif defined(MMAP)
+    //get shmdid first by hashing
+    int nameLen = strlen(name);
+    shmId = RSHash  (name, nameLen); 
+    
+	return -1;
+    #endif
     return 0;
+
 }
 
 int NVCloseRegion(NVRDescr * addr) {
@@ -297,7 +303,7 @@ void NVRootmapDump(NVRDescr *nvrAddr){
     printf("--------------- NVRootmapDump DUMP ------------------\n");
     printf("                  type       location        name  \n");
     while((addr2offset(nvrAddr,nvrmPtrIdx))< nvrAddr->size){
-        printf("rootmap          %3ld         %lx         %s\n",nvrmPtrIdx->type, (unsigned long)nvrmPtrIdx->location, nvrmPtrIdx->name);    
+        printf("rootmap          %3ld         %lx         %s\n",nvrmPtrIdx->type, (unsigned long)nvrmPtrIdx->location, nvrmPtrIdx->name);
         nvrmPtrIdx++; //  move to next existed rootmapitem
     }
 }
