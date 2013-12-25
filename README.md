@@ -3,7 +3,7 @@ nvm-simulator
 
 cs652 course project
 
-Simulate a non-volative memory using a chunk of main memory.
+Simulate a non-volatile memory using a chunk of main memory.
 Generally, process never share resourcces unless the shared memory. 
 This project is using this mechanism to implement a NVM simulator.
 
@@ -20,6 +20,8 @@ This project is using this mechanism to implement a NVM simulator.
 - The process won't crash and there is no power outage.
 - Currently, there is only file-level lock granularity (The programmer should be responsible for this).
 - NVMalloc and NVFree is not thread safe. 
+- NVSet can not span one or more NVRegion
+- All NVRegion should be mounted at the same starting address 
 
 
 #### Credits
