@@ -29,6 +29,17 @@ This project is using this mechanism to implement an NVM simulator.
 - General Purpose Hash Function Algorithms Library by Arash Partow
 
 
+#### Implemented APIs(* means required)
+- (*)NVOpenRegion
+- (*)NVCloseRegion
+- (*)NVDeleteRegion
+- (*)NVFetchRoot
+- (*)NVNewRoot
+- (*)NVMalloc
+- (*)NVFree
+- NVRealloc
+- NVRDescrDump
+- NVRootmapDump
 
 
 
