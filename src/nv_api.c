@@ -68,6 +68,8 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
     NVRDescr *nvrAddr;
     char *shmPtr;
 
+#if defined(SHM)
+
     if ((keyNVRegion=ftok(name, 0))<0) {
  /* :TODO:11/05/2013 10:52:10 AM:: reminder of creating backing file */
         DEBUG_OUTPUT("Please create this file to back the memory.");
@@ -76,7 +78,7 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
 
     // unsigned int RSHash  (char* str, unsigned int len);
 
-#if defined(SHM)
+
     // get shmId, if not exist create
     if ((shmId=shmget(keyNVRegion,size,SHM_MODE))<=0) {
         if (errno==ENOENT){// this region is not exists, create a new one
@@ -118,7 +120,7 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
     int fd;
     if ( (fd = open(name, O_RDWR, S_IRWXU)) < 0){
         if (errno==ENOENT){// this region is not exists, create a new one
-            if ((fd = open(name, O_RDWR|O_CREAT, S_IRWXU)) < 0){
+            if ((fd = open(name, O_RDWR|O_CREAT|O_TRUNC, S_IRWXU)) < 0){
                 e("NVOpenRegion fd open error");
             }
             // successfully create this file
@@ -145,6 +147,9 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
         // exit(1);
         e("NVOpenRegion fstat error");
     }
+    keyNVRegion = file_stat.st_ino;
+   // ftruncate(fd, file_stat.st_size+size);
+    printf("filein size = %ld\n",file_stat.st_size);
     void *start_fp;
     // check size here.
     //
@@ -156,7 +161,7 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
     }
     // now you can close
     close(fd);
-    shmId = RSHash  (name, nameLen); // provide shmid using hash
+    shmId = RSHash(name, nameLen); // provide shmid using hash
 
     // as long as the file exists, the shared memory exists.
 
@@ -210,7 +215,7 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
 /*
  * ===  FUNCTION  ======================================================================
  *         Name:  NVDeleteRegion
- *  Description:
+ *  Description:  For shm, it is shmctl with IPC_RMID. For munmap, it is msync and munmap delete
  * =====================================================================================
  */
 int NVDeleteRegion(char * name) {
@@ -231,46 +236,78 @@ int NVDeleteRegion(char * name) {
         return -1;
     }
  /* :TODO:11/06/2013 10:58:02 PM:: return remaining processes */
-    // RM
     if (shmctl(shmId,IPC_RMID,NULL)<0) {
         perror("NVDeleteRegion shmctl rmid error");
         return -1;
     }
     #elif defined(MMAP)
-    //get shmdid first by hashing
-    int nameLen = strlen(name);
-    shmId = RSHash  (name, nameLen); 
-    
-	return -1;
+    // get shmdid first by hashing  
+    // int nameLen = strlen(name);
+    // shmId = RSHash  (name, nameLen); 
+
+    // just delete the file. msync and munmap is ensured by NVCloseRegion
+    if(remove(name)<0) {
+    	perror("NVDeleteRegion unlink file error");
+    	return -1;
+    }
     #endif
     return 0;
-
 }
 
+
+
 int NVCloseRegion(NVRDescr * addr) {
-    // DEBUG_OUTPUT("1");
     int shmId;
 // #ifdef  DEBUG
 //     printf("%d\n",addr->refKey);
 // #endif     /* -----  not DEBUG  ----- */
-    if ((shmId=shmget(addr->refKey,0,SHM_MODE))<=0) {
-        perror("NVCloseRegion shmget error");
-        return -1;
-    }
-    // DEBUG_OUTPUT("2");
-
-    if (addr->processCnt>1) {
+	if (addr->processCnt>1) {
         addr->processCnt--;
         if (addr->processCnt==0) {
             addr->refKey=0;//NULL
         }
-        //return 0;
     }
 
-    if ((shmdt(addr))<0) {
-        perror("NVCloseRegion shmdt error");
-        return -1;
-    }
+    #if defined(SHM)
+	    if ((shmId=shmget(addr->refKey,0,SHM_MODE))<=0) {
+	        perror("NVCloseRegion shmget error");
+	        return -1;
+	    }
+
+
+	    if ((shmdt(addr))<0) {
+	        perror("NVCloseRegion shmdt error");
+	        // add the processCnt back by 1
+	        return -1;
+	    }
+    #elif defined(MMAP)
+
+	    if (munmap(addr, (size_t)addr->size)<0) { // it will call msync implicite
+	    	perror("NVCloseRegion munmap error");
+    		return -1; 
+	    }
+        
+    #endif
+
+
+    // if ((shmId=shmget(addr->refKey,0,SHM_MODE))<=0) {
+    //     perror("NVCloseRegion shmget error");
+    //     return -1;
+    // }
+
+    // if (addr->processCnt>1) {
+    //     addr->processCnt--;
+    //     if (addr->processCnt==0) {
+    //         addr->refKey=0;//NULL
+    //     }
+    //     //return 0;
+    // }
+
+    // if ((shmdt(addr))<0) {
+    //     perror("NVCloseRegion shmdt error");
+    //     // add the processCnt back by 1
+    //     return -1;
+    // }
 
 
     return 0;

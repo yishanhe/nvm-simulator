@@ -49,7 +49,12 @@ int main(int argc, char const *argv[])
     int pid;
     // int child_status;
     NVRDescr * nvrAddr;
+#if defined(SHM)
+    //char name[]="/scratch/syi.scratch/GitRepo/nvm-simulator/nvm.daemon/NVRegion1";
     char name[]="/home/syi/GitRepo/nvm-simulator/nvm.daemon/NVRegion1";
+#elif defined(MMAP)
+    char name[]="/home/syi/GitRepo/nvm-simulator/nvm.daemon/NVRegion4";
+#endif
     char rootname1[]="root1";
     char rootname2[]="root2";
     //char name[]="/scratch/syi.scratch/GitRepo/nvm-simulator/nvm.daemon/NVRegion1";
@@ -64,7 +69,7 @@ int main(int argc, char const *argv[])
     NVRDescrDump(nvrAddr);
     int array_size = 100;
     int * array = (int*)malloc(sizeof(int)*array_size);
-    
+
     // if (mm_init()<0)
     // {
     //     e("MVMalloc initialization error.");

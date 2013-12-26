@@ -5,7 +5,7 @@ cs652 course project
 
 Simulate a non-volatile memory using a chunk of main memory.
 Generally, process never share resourcces unless the shared memory. 
-This project is using this mechanism to implement a NVM simulator.
+This project is using this mechanism to implement an NVM simulator.
 
 
 #### Project Requirements

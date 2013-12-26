@@ -44,7 +44,7 @@
 void BubbleSort(int *a, int n);
 
 void BubbleSort(int *a, int n) {
-    int tmp,i,j; 
+    int tmp,i,j;
     for (i=0;i<n;i++) {
         for (j=0;j<n-i;j++){
             if(*(a+j) > *(a+j+1)){
@@ -61,10 +61,10 @@ int Partition(int *array, int i, int j);
 void QuickSort(int *array, int low, int high);
 
 
-/* 
+/*
  * ===  FUNCTION  ======================================================================
  *         Name:  Partition
- *  Description:  quicksort sorting 
+ *  Description:  quicksort sorting
  * =====================================================================================
  */
         int
@@ -111,13 +111,17 @@ int main(int argc, const char *argv[])
     int i,j;
     // int child_status;
     NVRDescr * nvrAddr;
+#if defined(SHM)
     char name[]="/home/syi/GitRepo/nvm-simulator/nvm.daemon/NVRegion1";
+#elif defined(MMAP)
+    char name[]="/home/syi/GitRepo/nvm-simulator/nvm.daemon/NVRegion4";
+#endif
     char rootname1[]="root1";
     //char name[]="/scratch/syi.scratch/GitRepo/nvm-simulator/nvm.daemon/NVRegion1";
 
 
     nvrAddr = NVOpenRegion(name,0,SHM_SIZE);
-    
+
     // shmid = nvrAddr->ID;
 
     // printf("The shmid is %d\n",shmid);
@@ -162,7 +166,7 @@ int main(int argc, const char *argv[])
     DEBUG_OUTPUT("NVCloseRegion Test Pass");
 
 
-    
+
     // nvrAddr = NVOpenRegion(name,0,SHM_SIZE);
 
     // NVRootmapItem_t  * nvrmPtrIdx = (NVRootmapItem_t  *)NVFetchRoot(nvrAddr, rootname1);

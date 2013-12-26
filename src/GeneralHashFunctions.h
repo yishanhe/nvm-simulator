@@ -25,7 +25,7 @@
 #include <stdio.h>
 
 
-typedef unsigned int (*hash_function)(char*, unsigned int len);
+//typedef unsigned int (*hash_function)(char*, unsigned int len);
 
 
 unsigned int RSHash  (char* str, unsigned int len);

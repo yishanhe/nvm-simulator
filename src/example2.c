@@ -35,7 +35,7 @@
 void BubbleSort(int *a, int n);
 
 void BubbleSort(int *a, int n) {
-    int tmp,i,j; 
+    int tmp,i,j;
     for (i=0;i<n;i++) {
         for (j=0;j<n-i;j++){
             if(*(a+j) > *(a+j+1)){
@@ -55,10 +55,10 @@ int Partition(int *array, int i, int j);
 void QuickSort(int *array, int low, int high);
 
 
-/* 
+/*
  * ===  FUNCTION  ======================================================================
  *         Name:  Partition
- *  Description:  quicksort sorting 
+ *  Description:  quicksort sorting
  * =====================================================================================
  */
         int
@@ -103,22 +103,26 @@ int main(int argc, const char *argv[])
 
     char rootname1[]="root1";
    // char name[]="/scratch/syi.scratch/GitRepo/nvm-simulator/nvm.daemon/NVRegion1";
+#if defined(SHM)
     char name[]="/home/syi/GitRepo/nvm-simulator/nvm.daemon/NVRegion1";
+#elif defined(MMAP)
+    char name[]="/home/syi/GitRepo/nvm-simulator/nvm.daemon/NVRegion4";
+#endif
 
-    // open existed region 
+    // open existed region
     NVRDescr * nvrAddr = NVOpenRegion(name,0,SHM_SIZE);
     if (nvrAddr==NULL) {
         e("NVOpenRegion fails");
     }
     printf("base addr of nvr  %p\n",nvrAddr);
     DEBUG_OUTPUT("NVOpenRegion Re-open Existed Region Test Pass");
-    
+
     NVRDescrDump(nvrAddr);
     NVRootmapDump(nvrAddr);
 
     // shmid = nvrAddr->ID;
     // printf("The shmid is %d\n",shmid);
-    
+
     // void *NVFetchRoot(NVRDescr * addr, char *name);
     NVRootmapItem_t  * nvrmPtrIdx = (NVRootmapItem_t  *)NVFetchRoot(nvrAddr, rootname1);
 
@@ -126,7 +130,7 @@ int main(int argc, const char *argv[])
  //   int array_size = (int)nvrmPtrIdx->type;
     int array_size = 100;
     printf("the array size is %d\n", array_size);
- 
+
     // get the array address
     int * array_shm = (int *) nvrmPtrIdx->location;
     printf("the array addr is %p\n", array_shm);
@@ -150,7 +154,7 @@ int main(int argc, const char *argv[])
     for (j = 0; j < array_size; j++)
     {
         printf("%d\n", *(array_shm+j));
-    } 
+    }
 
     // NVFree(array_shm); // need to invalidate the correspoding nvroot
 

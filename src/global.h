@@ -24,8 +24,8 @@
 /*-----------------------------------------------------------------------------
  *  Global define parameters
  *-----------------------------------------------------------------------------*/
-#define SHM
-//#define MMAP
+//#define SHM
+#define MMAP
 #define FIXMEMBASE
 #define DEBUG
 

@@ -35,7 +35,7 @@ PROFILE        := NO
 EXECUTABLE      := test
 
 # ------------  list of all source files  --------------------------------------
-SOURCES         := test.c nv_api.c mm.c memlib.c 
+SOURCES         := test.c nv_api.c mm.c memlib.c GeneralHashFunctions.c
 
 # ------------  compiler  ------------------------------------------------------
 CC              := gcc

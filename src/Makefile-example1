@@ -37,7 +37,7 @@ EXECUTABLE      := example1
 
 # ------------  list of all source files  --------------------------------------
 #SOURCES         := main.c nv_api.c nv_mm.c mm.c 
-SOURCES         := example1.c nv_api.c mm.c memlib.c 
+SOURCES         := example1.c nv_api.c mm.c memlib.c GeneralHashFunctions.c  
 #SOURCES         := example2.c nv_api.c mm.c memlib.c 
 
 # ------------  compiler  ------------------------------------------------------
