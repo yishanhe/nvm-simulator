@@ -13,21 +13,33 @@ This project is using this mechanism to implement an NVM simulator.
 - DataRegion realted APIs
 
 
-
 #### Assumptions, requirements and limitations
 - System V Shared Memory support
 - All NVRegions are attached at the same starting address of the process address space.
 - The process won't crash and there is no power outage.
 - Currently, there is only file-level lock granularity (The programmer should be responsible for this).
-- NVMalloc and NVFree is not thread safe. 
+- NVMalloc, NVRealloc and NVFree is not thread safe. 
 - NVSet can not span one or more NVRegion
-- All NVRegion should be mounted at the same starting address 
 
-
-#### Credits
-- CSAPP course project malloc lab implementation.
-- General Purpose Hash Function Algorithms Library by Arash Partow
-
+#### File Manifest
+- Makefile
+   - Makefile-test
+   - Makefile-example1
+   - Makefile-example2
+- test.c
+- example1.c
+- example2.c
+- global.h
+- memlib.h
+- memlib.c
+- mm.h
+- mm.c
+- GeneralHashFunctions.h
+- GeneralHashFunctions.c
+- mm.h
+- mm.c
+- nv_api.h
+- nv_api.c
 
 #### Implemented APIs(* means required)
 - (*)NVOpenRegion
@@ -42,8 +54,17 @@ This project is using this mechanism to implement an NVM simulator.
 - NVRootmapDump
 
 
+#### Configuration Instruction
 
-### Copyright (BSD-style)
+#### Installation Instruction
+
+#### Operating Instruction
+
+#### Credits
+- CSAPP course project malloc lab implementation.
+- General Purpose Hash Function Algorithms Library by Arash Partow
+
+#### Copyright (BSD-style)
 
 Copyright (c) 2013 Shanhe Yi
 
