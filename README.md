@@ -55,6 +55,18 @@ This project is using this mechanism to implement an NVM simulator.
 
 
 #### Configuration Instruction
+All the configuratoin settings are in the file global.h.
+Those paramemter can be configurated:
+- define SHM or MMAP // choose how to implement share memory
+- define FIXMEMBASE // fixed startingAddr if defined 
+- define DEBUG // debug info ouput if defined
+- define NV_MAXPATH // maximum file name length
+- define NVROOT_MAXPATH // maximum root name length
+- define SHM_MODE // read write mode
+- define SHM_SIZE // shared memory size
+- define PAGESIZE // page size
+- define membase // default starting address of shm
+
 
 #### Installation Instruction
 
