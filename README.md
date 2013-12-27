@@ -42,16 +42,16 @@ This project is using this mechanism to implement an NVM simulator.
 - nv_api.c
 
 #### Implemented APIs(* means required)
-- (*)NVOpenRegion (
-- (*)NVCloseRegion (
-- (*)NVDeleteRegion (
-- (*)NVFetchRoot (
-- (*)NVNewRoot (
-- (*)NVMalloc (
-- (*)NVFree (
-- NVRealloc (
-- NVRDescrDump (
-- NVRootmapDump (
+- (*)NVOpenRegion ()
+- (*)NVCloseRegion ()
+- (*)NVDeleteRegion ()
+- (*)NVFetchRoot ()
+- (*)NVNewRoot ()
+- (*)NVMalloc ()
+- (*)NVFree ()
+- NVRealloc ()
+- NVRDescrDump ()
+- NVRootmapDump ()
 
 
 
@@ -73,6 +73,25 @@ Those paramemter can be configurated:
 To install this nvm-simulator, you only need to copy out files according to the File Manifest to your working folder. Then you can write you own application using APIs. Remember to modify the makefiles to ensure compilation.
 
 #### Operating Instruction
+
+#### How to run Test
+For example, to complie and run the test.c, you can do the following:
+- >: make test
+- >: ./test
+- >: make clean-test
+Then there will be output information in stdout.
+Make will go into the Makefile then go into the Makefile-test
+
+#### How to run Example
+- >: make example1
+- >: make example2
+- >: ./example1
+- >: ./example2
+- >: make clean-example1
+- >: make clean-example2
+
+If you want to complie all at once. just run >: make. This will automatically compile all test and examples. To clean those files you can run >: make clean.
+
 
 #### Credits
 - CSAPP course project malloc lab implementation.
