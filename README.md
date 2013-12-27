@@ -73,6 +73,7 @@ Those paramemter can be configurated:
 To install this nvm-simulator, you only need to copy out files according to the File Manifest to your working folder. Then you can write you own application using APIs. Remember to modify the makefiles to ensure compilation.
 
 #### Operating Instruction
+To write your own application using nvm-simulator, 
 
 #### How to run Test
 For example, to complie and run the test.c, you can do the following:
