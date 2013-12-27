@@ -447,6 +447,21 @@ void * NVMalloc(NVRDescr * addr, int size) {
 }
 
 
+/*
+ * ===  FUNCTION  ======================================================================
+ *         Name:  NVRealloc
+ *  Description:
+ * =====================================================================================
+ */
+
+
+void * NVRealloc(NVRDescr * addr, void * ptr, int size) {
+
+    void * newMemPtr = mm_realloc(ptr,(size_t)size);
+    // printf("newMemPtr is %p\n", newMemPtr);
+    return newMemPtr;
+
+}
 
 /*
  * ===  FUNCTION  ======================================================================
