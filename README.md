@@ -42,16 +42,16 @@ This project is using this mechanism to implement an NVM simulator.
 - nv_api.c
 
 #### Implemented APIs(* means required)
-- (*)NVOpenRegion ()
-- (*)NVCloseRegion ()
-- (*)NVDeleteRegion ()
-- (*)NVFetchRoot ()
-- (*)NVNewRoot ()
-- (*)NVMalloc ()
-- (*)NVFree ()
-- NVRealloc ()
-- NVRDescrDump ()
-- NVRootmapDump ()
+- (*)NVOpenRegion (char * name, void * startingAddr, int size) // create a region with given size and name, at the given starting address.
+- (*)NVCloseRegion (NVRDescr * addr) // close region at the given address
+- (*)NVDeleteRegion (char * name) // delete region of the given name
+- (*)NVFetchRoot (NVRDescr * addr, char * name) // fetch given name root at the given region address
+- (*)NVNewRoot (NVRDescr * addr, void *p, char * name, size_t size) // create a new root with pointer p and its size as given name in given region
+- (*)NVMalloc (NVRDescr * addr, int size) // malloc a block of given size in given region
+- (*)NVFree (void * addr) // free the data object in given address
+- NVRealloc (NVRDescr * addr, void * ptr, int size) // realloc the given data object with new size in the given region
+- NVRDescrDump (NVRDescr *nvrAddr) // print out the NVRDescr info of given region
+- NVRootmapDump (NVRDescr *nvrAddr) // print out the Rootmap of given region
 
 
 
