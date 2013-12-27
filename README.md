@@ -42,16 +42,17 @@ This project is using this mechanism to implement an NVM simulator.
 - nv_api.c
 
 #### Implemented APIs(* means required)
-- (*)NVOpenRegion
-- (*)NVCloseRegion
-- (*)NVDeleteRegion
-- (*)NVFetchRoot
-- (*)NVNewRoot
-- (*)NVMalloc
-- (*)NVFree
-- NVRealloc
-- NVRDescrDump
-- NVRootmapDump
+- (*)NVOpenRegion (
+- (*)NVCloseRegion (
+- (*)NVDeleteRegion (
+- (*)NVFetchRoot (
+- (*)NVNewRoot (
+- (*)NVMalloc (
+- (*)NVFree (
+- NVRealloc (
+- NVRDescrDump (
+- NVRootmapDump (
+
 
 
 #### Configuration Instruction
@@ -69,6 +70,7 @@ Those paramemter can be configurated:
 
 
 #### Installation Instruction
+To install this nvm-simulator, you only need to copy out files according to the File Manifest to your working folder. Then you can write you own application using APIs. Remember to modify the makefiles to ensure compilation.
 
 #### Operating Instruction
 
