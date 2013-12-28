@@ -73,7 +73,7 @@ Those paramemter can be configurated:
 To install this nvm-simulator, you only need to copy out files according to the File Manifest to your working folder. Then you can write you own application using APIs. Remember to modify the makefiles to ensure compilation.
 
 #### Operating Instruction
-To write your own application using nvm-simulator, 
+To write your own application using nvm-simulator, if the MMAP is defined, you do not need to create the backing file pre-hand. If you define the SHM, you do need to create the backing file pre-hand. The backing file should have the corresponding pathname as the input. Generally, the first operation should always be the NVOpenRegion. If the region exists, it will open it otherwise it will create it. After that, the data region will be initializaed, you can do operation in the data region by using the memory-realted APIs such as NVMalloc, NVFree and NVRealloc. If you want the data in the region is persistent, you can just close the region. If you want to destroy the data, you can use NVDeleteRegion to delete this region.
 
 #### How to run Test
 For example, to complie and run the test.c, you can do the following:
