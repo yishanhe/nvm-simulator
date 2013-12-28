@@ -456,11 +456,10 @@ void * NVMalloc(NVRDescr * addr, int size) {
 
 
 void * NVRealloc(NVRDescr * addr, void * ptr, int size) {
-
+    printf("oldPtr is %p\n", ptr);
     void * newMemPtr = mm_realloc(ptr,(size_t)size);
-    // printf("newMemPtr is %p\n", newMemPtr);
+    printf("newMemPtr is %p\n", newMemPtr);
     return newMemPtr;
-
 }
 
 /*

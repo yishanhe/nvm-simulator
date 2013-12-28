@@ -42,12 +42,12 @@ CC              := gcc
 CXX             := g++
 
 # ------------  compiler flags  ------------------------------------------------
-DEBUG_CFLAGS    := -Wall -O0 -g -std=c99
-RELEASE_CFLAGS  := -Wall -O3 -std=c99
+DEBUG_CFLAGS    := -m32 -Wall -O0 -g -std=c99
+RELEASE_CFLAGS  := -m32 -Wall -O3 -std=c99
 
 # ------------  linker flags  --------------------------------------------------
-DEBUG_LDFLAGS    := -g
-RELEASE_LDFLAGS  :=
+DEBUG_LDFLAGS    := -m32 -g
+RELEASE_LDFLAGS  := -m32
 
 ifeq (YES, ${DEBUG})
   CFLAGS       := ${DEBUG_CFLAGS}

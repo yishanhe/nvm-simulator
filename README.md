@@ -15,6 +15,7 @@ This project is using this mechanism to implement an NVM simulator.
 
 
 #### Assumptions, requirements and limitations
+- 32bit(-m32 option)
 - System V Shared Memory support
 - All NVRegions are attached at the same starting address of the process address space.
 - The process won't crash and there is no power outage.

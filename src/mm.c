@@ -423,7 +423,7 @@ int mm_check() {
 
 // Extra credit.
 void* mm_realloc(void* ptr, size_t size) {
-  printf("This is mm_realloc\n");
+  //printf("This is mm_realloc\n");
   // ... implementation here ...
   
   size_t blockUseTag;
