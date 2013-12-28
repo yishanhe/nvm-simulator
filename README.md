@@ -59,6 +59,7 @@ This project is using this mechanism to implement an NVM simulator.
 #### Configuration Instruction
 All the configuratoin settings are in the file global.h.
 Those paramemter can be configurated:
+
 - define SHM or MMAP // choose how to implement share memory
 - define FIXMEMBASE // fixed startingAddr if defined 
 - define DEBUG // debug info ouput if defined
