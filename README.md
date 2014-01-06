@@ -21,6 +21,7 @@ This project is using this mechanism to implement an NVM simulator.
 - Currently, there is only file-level lock granularity (The programmer should be responsible for this).
 - NVMalloc, NVRealloc and NVFree is not thread safe. 
 - NVSet can not span one or more NVRegion
+- Region path is hard-coded in the source code. You may consider change it when you are using this.
 
 #### File Manifest
 - Makefile

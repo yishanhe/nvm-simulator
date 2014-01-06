@@ -71,7 +71,6 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
 #if defined(SHM)
 
     if ((keyNVRegion=ftok(name, 0))<0) {
- /* :TODO:11/05/2013 10:52:10 AM:: reminder of creating backing file */
         DEBUG_OUTPUT("Please create this file to back the memory.");
         e("NVOpenRegion ftok error");
     }
@@ -169,7 +168,6 @@ NVRDescr * NVOpenRegion(char * name,            /* region name */
 
     nvrAddr = (NVRDescr *)shmPtr;
 
-/* :TODO:11/05/2013 03:24:08 PM:: warp between shmctl and NVRDescr */
     if (flag==1) {// initiate the meta data of this region
         nvrAddr->size = size;
         nvrAddr->refKey = keyNVRegion;
@@ -241,9 +239,9 @@ int NVDeleteRegion(char * name) {
         return -1;
     }
     #elif defined(MMAP)
-    // get shmdid first by hashing  
+    // get shmdid first by hashing
     // int nameLen = strlen(name);
-    // shmId = RSHash  (name, nameLen); 
+    // shmId = RSHash  (name, nameLen);
 
     // just delete the file. msync and munmap is ensured by NVCloseRegion
     if(remove(name)<0) {
@@ -284,9 +282,9 @@ int NVCloseRegion(NVRDescr * addr) {
 
 	    if (munmap(addr, (size_t)addr->size)<0) { // it will call msync implicite
 	    	perror("NVCloseRegion munmap error");
-    		return -1; 
+    		return -1;
 	    }
-        
+
     #endif
 
 
